@@ -1,0 +1,18 @@
+{
+  "name": "come-dine-with-the-traphouse",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Event portal for Come Dine With The Traphouse: rotation, scorecards and a Grand Reveal.",
+  "type": "module",
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "build": "node scripts/build.mjs",
+    "test": "node scripts/test.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@vercel/blob": "^2.8.0"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "name": "Come Dine With The Traphouse",
+  "short_name": "Traphouse",
+  "description": "5 teams. 5 nights. 1 champion.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#120e18",
+  "theme_color": "#120e18",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
