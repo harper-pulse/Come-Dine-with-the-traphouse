@@ -177,7 +177,7 @@ export function NightView({ id }) {
       ${status === 'upcoming' && night.startsAt && html`<div style="margin-bottom:14px"><${Countdown} to=${night.startsAt} /></div>`}
       ${status === 'open' && night.locksAt && html`<p class="small" style="margin-bottom:12px">Scorecards lock ${fmtDay(night.locksAt, zone)} at ${fmtTime(night.locksAt, zone)}.</p>`}
       <div class="cta-row" style="margin-top:0">
-        ${status === 'open' && mine && !hosting && html`<a class=${`btn ${card ? 'paper' : 'lg'}`} href=${`#/score/${night.id}`}>${card ? `Your score: ${card.overall}/10. Edit` : '📝 Score this dinner'}</a>`}
+        ${status === 'open' && mine && !hosting && html`<a class=${`btn ${card ? 'paper' : 'lg'}`} href=${`#/score/${night.id}`}>${card ? `Your score: ${card.overall}/10. Edit` : 'Score this dinner'}</a>`}
         ${hosting && html`<a class="btn" href="#/me"><${Icon} name="edit" />Edit your night</a>`}
         ${night.startsAt && html`<a class="btn sm dark" href=${`/api/calendar?night=${night.id}`}><${Icon} name="cal" size="18" />Apple / Outlook</a>`}
         ${gcal && html`<a class="btn sm dark" href=${gcal} target="_blank" rel="noopener">Google Cal</a>`}

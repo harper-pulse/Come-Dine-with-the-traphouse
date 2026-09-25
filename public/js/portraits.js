@@ -9,10 +9,10 @@ import { finalAvatar } from './imaging.js';
 import { compressImage } from './util.js';
 
 const TIPS = [
-  'Tip: you cannot score your own dinner. The portal checked.',
-  'Tip: tactical scoring will be remembered. Forever.',
+  'Tip: you can’t score your own dinner.',
+  'Tip: tactical scoring gets noticed.',
   'Tip: scorecards lock at midday the day after each dinner.',
-  'Tip: the taxi confessional is anonymous. Mostly.',
+  'Tip: taxi confessionals are anonymous.',
   'Tip: a clear, well-lit photo of your face works best.',
   'Tip: hosts can keep the menu secret until the night.',
 ];
@@ -160,7 +160,7 @@ function Studio({ open, onClose, target, label, kind, teamId, ai, photo }) {
         ${error && html`<p class="error-text" role="alert">${error}</p>`}
         ${aiOn
           ? html`<button class="btn lg block" disabled=${noGoes} onClick=${useAi}>
-              🍌 Make ${kind === 'duo' ? 'us' : 'me'} GTA
+              Make ${kind === 'duo' ? 'us' : 'me'} GTA
             </button>
             <p class="hint center">${teamId
               ? 'Nano Banana redraws the photo in the poster’s style. Organiser goes are unlimited.'
@@ -168,7 +168,7 @@ function Studio({ open, onClose, target, label, kind, teamId, ai, photo }) {
                 ? 'Your team has used all its AI goes. Ask the organiser for more.'
                 : `Nano Banana redraws the photo in the poster’s style. ${left} AI ${left === 1 ? 'go' : 'goes'} left for your team.`}</p>`
           : html`<p class="hint">AI portraits aren’t switched on for this portal yet. If this is already a finished portrait (say, one made in the Gemini app), you can use it as is.</p>`}
-        ${aiOn && html`<p class="hint center" style="margin-bottom:-6px">Already made it yourself in the Gemini app?</p>`}
+        ${aiOn && html`<p class="hint center" style="margin-bottom:-6px">If you made it yourself, say in the Gemini app, you can use it as is.</p>`}
         <button class=${`btn block ${aiOn ? 'dark' : 'lg'}`} onClick=${useAsIs}>Use as is</button>`}
 
       ${(step === 'result' || step === 'saving') && result && html`
@@ -176,9 +176,9 @@ function Studio({ open, onClose, target, label, kind, teamId, ai, photo }) {
           <figure class="team-portrait tilt" style="--w:320px"><img src=${result.url} alt="Your GTA portrait" /></figure>
         </div>
         ${error && html`<p class="error-text" role="alert">${error}</p>`}
-        <button class="btn lg block" disabled=${step === 'saving'} onClick=${keep}>${step === 'saving' ? 'Saving…' : '✅ Keep it'}</button>
+        <button class="btn lg block" disabled=${step === 'saving'} onClick=${keep}>${step === 'saving' ? 'Saving…' : 'Keep it'}</button>
         <div class="row wrap" style="justify-content:center">
-          ${aiOn && html`<button class="btn sm dark" disabled=${step === 'saving' || noGoes} onClick=${useAi}>${result.method === 'ai' ? '🍌 Redraw (uses a go)' : '🍌 Make it GTA instead'}</button>`}
+          ${aiOn && html`<button class="btn sm dark" disabled=${step === 'saving' || noGoes} onClick=${useAi}>${result.method === 'ai' ? 'Redraw (uses a go)' : 'Make it GTA instead'}</button>`}
           <button class="btn sm ghost" disabled=${step === 'saving'} onClick=${onClose}>Cancel</button>
         </div>`}
     </div>
@@ -237,7 +237,7 @@ export function PortraitsSection({ team, ai, teamId }) {
         ${aiOn
           ? 'Upload a photo and Nano Banana (Google’s image AI, the one the poster was made with) redraws it in the poster’s GTA style. Do one of you both for the team, and one each for your player icons.'
           : 'Upload a finished GTA-style portrait (for example one made in the Gemini app): one of you both for the team, and one each for your player icons.'}${' '}
-        ${aiOn ? 'Made one yourself in Gemini? Upload it and pick “Use as is”. ' : ''}Original photos are never stored.
+        ${aiOn ? 'If you already made one yourself in Gemini, upload it and pick “Use as is”. ' : ''}Original photos are never stored.
       </p>
     </div>
     <div class="portrait-grid">

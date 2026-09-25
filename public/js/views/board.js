@@ -13,13 +13,13 @@ function Sealed() {
       <p style="margin:10px auto 16px;max-width:40ch">
         ${s.event.revealMode === 'nightly'
           ? 'Scores for each night appear here once the organiser reveals them.'
-          : 'Nobody sees a single score until the Grand Reveal. Not the hosts. Not even the organiser.'}
+          : 'Nobody sees any scores until the Grand Reveal, including the hosts and the organiser.'}
       </p>
       <div style="max-width:420px;margin:0 auto">
         <${Progress} value=${s.counts.submitted} max=${s.counts.expected} />
         <p class="small" style="margin-top:6px">${s.counts.submitted} of ${s.counts.expected} scorecards handed in</p>
       </div>
-      ${s.show.status === 'live' && html`<a class="btn" href="#/reveal" style="margin-top:16px">🔴 Watch the Grand Reveal</a>`}
+      ${s.show.status === 'live' && html`<a class="btn" href="#/reveal" style="margin-top:16px">Watch the Grand Reveal</a>`}
     </section>
     <section class="stack">
       ${s.nights.map((n) => {
@@ -127,7 +127,7 @@ export function BoardView() {
   const cats = s.categories;
   if (!r) {
     return html`<div class="page narrow stack-lg">
-      <${PageTitle} kicker="Leaderboard" title="Who's winning?" />
+      <${PageTitle} kicker="Scores" title="Leaderboard" />
       <${Sealed} />
     </div>`;
   }
@@ -135,7 +135,7 @@ export function BoardView() {
   const winner = r.partial ? null : teamById(ranked[0]?.teamId);
   return html`<div class="page stack-lg">
     <${PageTitle} kicker=${r.partial ? `After ${r.nightIds.length} of ${s.nights.length} nights` : 'Final results'} title="Leaderboard">
-      ${r.partial ? 'Only revealed nights count so far. Everything else is still sealed.' : `${r.cardsCount} scorecards. One champion.`}
+      ${r.partial ? 'Only revealed nights count so far. Everything else is still sealed.' : `Worked out from ${r.cardsCount} scorecards.`}
     <//>
     ${winner && html`<section class="panel tone-orange halftone has-flames center">
       <div class="kicker" style="color:#fff">Champions</div>
@@ -185,6 +185,6 @@ export function BoardView() {
         })}
       </div>
     </section>
-    ${!r.partial && html`<div class="center"><a class="btn dark" href="#/reveal">🎬 Replay the Grand Reveal</a></div>`}
+    ${!r.partial && html`<div class="center"><a class="btn dark" href="#/reveal">Replay the Grand Reveal</a></div>`}
   </div>`;
 }

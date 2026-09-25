@@ -110,7 +110,7 @@ export function MeView() {
   const [saving, setSaving] = useState('');
   if (!a.team) {
     return html`<div class="page narrow stack-lg">
-      <${PageTitle} kicker="My team" title="Team login">Your organiser sent each team a secret link. Tap it and you're in. No link? Type your code.<//>
+      <${PageTitle} kicker="My team" title="Team login">Your organiser sent each team a secret link. Tap it to log in, or type your team code below.<//>
       <div class="panel paper"><${TeamLogin} compact onDone=${() => window.scrollTo(0, 0)} /></div>
     </div>`;
   }

@@ -23,7 +23,6 @@ function LiveBanner() {
         <div class="panel-title" style="margin:8px 0 0">The Grand Reveal is happening</div>
         <p class="small">Tap to follow along on your phone.</p>
       </div>
-      <span style="font-size:2.6rem" aria-hidden="true">🏆</span>
     </div>
   </a>`;
 }
@@ -42,7 +41,7 @@ function Hero({ s }) {
         <div><${FireText} text="traphouse" tone="flame" /></div>
       </div>
       <p class="lede" style="font-size:1.15rem;color:var(--text)">${s.event.tagline}</p>
-      ${s.event.prize && html`<p><span class="pill paper">🏆 Prize</span> <strong>${s.event.prize}</strong></p>`}
+      ${s.event.prize && html`<p><span class="pill paper">Prize</span> <strong>${s.event.prize}</strong></p>`}
       <div class="cta-row">
         <a class="btn" href="#/rotation"><${Icon} name="rotation" />The rotation</a>
         <a class="btn dark" href="#/rules"><${Icon} name="rules" />House rules</a>
@@ -66,8 +65,8 @@ function NextUp({ night, now }) {
   let cta;
   if (status === 'open' && mine && !hosting) {
     cta = card
-      ? html`<a class="btn paper block" href=${`#/score/${night.id}`}>✅ Scorecard in. Edit it</a>`
-      : html`<a class="btn lg block" href=${`#/score/${night.id}`}>📝 Score Night ${night.number}</a>`;
+      ? html`<a class="btn paper block" href=${`#/score/${night.id}`}>Scorecard in. Edit it</a>`
+      : html`<a class="btn lg block" href=${`#/score/${night.id}`}>Score Night ${night.number}</a>`;
   } else if (hosting) {
     cta = html`<a class="btn block" href="#/me"><${Icon} name="edit" />Edit your menu & details</a>`;
   } else if (status === 'open' && !mine) {
@@ -122,7 +121,7 @@ function YourTeam({ now }) {
       <a class="btn sm dark" href="#/me">My team</a>
     </div>
     <hr class="divider" />
-    ${hosting && html`<p style="margin-bottom:10px">🏠 You host <a href=${`#/night/${hosting.id}`}><strong>Night ${hosting.number}</strong></a>
+    ${hosting && html`<p style="margin-bottom:10px">You host <a href=${`#/night/${hosting.id}`}><strong>Night ${hosting.number}</strong></a>
       ${hosting.startsAt ? ` on ${fmtDay(hosting.startsAt, zone)}` : ''}.
       ${!hosting.theme || !hosting.hasMenu ? html` <a href="#/me">Add your theme and menu</a>.` : ''}</p>`}
     <div class="stack" style="--gap:8px">
@@ -153,7 +152,7 @@ function SealedStrip() {
     return html`<a class="panel tone-purple halftone" href="#/board" style="display:block;text-decoration:none;color:inherit">
       <div class="kicker" style="color:var(--flame-1)">The results are in</div>
       <div class="row between" style="margin-top:6px">
-        <${FireText} tag="h2" text=${`👑 ${winner?.name || ''}`} style="font-size:2rem" />
+        <${FireText} tag="h2" text=${winner?.name || ''} style="font-size:2rem" />
         <span class="btn sm">Leaderboard</span>
       </div>
     </a>`;
@@ -161,7 +160,7 @@ function SealedStrip() {
   return html`<section class="panel tone-blue halftone">
     <div class="row between wrap">
       <div>
-        <div class="kicker" style="color:var(--flame-1)">🔒 Scores are sealed</div>
+        <div class="kicker" style="color:var(--flame-1)">Scores are sealed</div>
         <p class="small" style="margin-top:4px">${`${s.counts.submitted} of ${s.counts.expected} scorecards handed in. `}${s.event.revealMode === 'nightly' ? 'Each night is revealed once the organiser opens it up.' : 'Nobody sees a thing until the Grand Reveal.'}</p>
       </div>
       <a class="btn sm dark" href="#/board">Leaderboard</a>

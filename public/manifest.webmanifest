@@ -1,7 +1,7 @@
 {
   "name": "Come Dine With The Traphouse",
   "short_name": "Traphouse",
-  "description": "5 teams. 5 nights. 1 champion.",
+  "description": "The rotation, scorecards and Grand Reveal for Come Dine With The Traphouse.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

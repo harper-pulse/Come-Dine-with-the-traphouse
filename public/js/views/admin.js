@@ -130,7 +130,7 @@ function Setup({ auth }) {
     <${PageTitle} kicker=${`Organiser setup · step ${step} of 3`} title=${['Claim the portal', 'The crews', 'The schedule'][step - 1]}>
       ${step === 1 && (existingPin ? 'Enter the organiser PIN to set the portal up again.' : 'You are the first one here, so you become the organiser. Pick a PIN you will remember.')}
       ${step === 2 && 'Name the teams and who is in them. Teams can change their own name and pick characters later.'}
-      ${step === 3 && 'When is the first dinner, and who hosts which night? You can fine-tune every date afterwards.'}
+      ${step === 3 && 'Set the first dinner date and who hosts each night. You can change any date later.'}
     <//>
     <form class="panel paper stack" onSubmit=${next}>
       ${step === 1 && html`
@@ -183,7 +183,7 @@ function Setup({ auth }) {
       ${error && html`<p class="error-text" role="alert">${error}</p>`}
       <div class="row">
         ${step > 1 && html`<button type="button" class="btn ghost" style="color:var(--paper-ink)" onClick=${() => setStep(step - 1)}>Back</button>`}
-        <button class="btn" style="flex:1" disabled=${busy}>${step < 3 ? 'Next' : busy ? 'Building…' : '🔥 Open the portal'}</button>
+        <button class="btn" style="flex:1" disabled=${busy}>${step < 3 ? 'Next' : busy ? 'Building…' : 'Open the portal'}</button>
       </div>
     </form>
   </div>`;
@@ -213,7 +213,7 @@ function AdminLogin() {
         <input class="input code" type="password" inputmode="numeric" maxlength="8" value=${pin} onInput=${(e) => setPin(e.target.value.replace(/\D/g, ''))} autofocus /></label>
       ${error && html`<p class="error-text" role="alert">${error}</p>`}
       <button class="btn block" disabled=${busy || !pin}>${busy ? 'Checking…' : 'Unlock'}</button>
-      <p class="hint">Forgot it? Set an ADMIN_PIN environment variable in Vercel and redeploy. That PIN then works instead.</p>
+      <p class="hint">If you forget it, set an ADMIN_PIN environment variable in Vercel and redeploy. That PIN will work instead.</p>
     </form>
   </div>`;
 }
@@ -256,11 +256,11 @@ function Overview() {
     <div class="grid-3">
       <div class="panel tight">
         <div class="kicker">Database</div>
-        <div class="panel-title" style="margin:4px 0 0">${ad.storage === 'redis' ? '✅ Upstash Redis' : ad.storage === 'file' ? '🧪 Local test file' : '❌ Missing'}</div>
+        <div class="panel-title" style="margin:4px 0 0">${ad.storage === 'redis' ? 'Upstash Redis' : ad.storage === 'file' ? 'Local test file' : 'Not connected'}</div>
       </div>
       <div class="panel tight">
         <div class="kicker">Photos</div>
-        <div class="panel-title" style="margin:4px 0 0">${ad.features.photos ? '✅ On' : '⏸️ Off'}</div>
+        <div class="panel-title" style="margin:4px 0 0">${ad.features.photos ? 'On' : 'Off'}</div>
         ${!ad.features.photos && html`<p class="small muted">Add a Blob store in Vercel Storage, then redeploy.</p>`}
       </div>
       <div class="panel tight">
@@ -295,7 +295,7 @@ function Overview() {
         <li>On the night: guests score from their phones before they leave</li>
         <li><a href="#/admin/reveal">After the last dinner, run the Grand Reveal</a></li>
       </ol>
-      <p class="small muted">Playing too? Log in to your own team on this phone with your team's link. Organiser and team logins work side by side.</p>
+      <p class="small muted">If you’re playing too, open your own team’s link on this phone. Organiser and team logins work side by side.</p>
     </section>
   </div>`;
 }
@@ -335,7 +335,7 @@ function inviteText(team, code) {
   const zone = tz();
   const night = s.nights.find((n) => n.hostTeamId === team.id);
   return [
-    `🔥 ${s.event.name} 🔥`,
+    s.event.name,
     `You're ${team.name} (${memberNames(team)}).`,
     night ? `You host Night ${night.number}${night.startsAt ? ` on ${fmtDayLong(night.startsAt, zone)}` : ''}.` : '',
     `Your secret team link (keep it in the team): ${joinLink(code)}`,
@@ -602,7 +602,7 @@ function RevealTab() {
       <div class="panel-title" style="margin:0">${show.status === 'idle' ? 'Not started' : show.status === 'live' ? `Live: screen ${show.step + 1} of ${show.total}` : 'Finished. Results are public.'}</div>
       <p class="small">Scores go from last place up to the winner, with each guest team's score flipping in, the taxi confessionals, then the awards. Put it on the TV and click through. Everyone else can follow on their phones.</p>
       <div class="row wrap">
-        <a class="btn" href="#/reveal">🎬 ${show.status === 'idle' ? 'Open presenter screen' : 'Go to the reveal'}</a>
+        <a class="btn" href="#/reveal">${show.status === 'idle' ? 'Open presenter screen' : 'Go to the reveal'}</a>
       </div>
     </section>
     <section class="panel stack">

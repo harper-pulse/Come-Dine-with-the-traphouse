@@ -18,7 +18,7 @@ function Intro({ step }) {
     <img src="/img/title-crop.jpg" alt="" style="width:min(70vw,340px);margin:0 auto;border-radius:16px;border:4px solid var(--ink);box-shadow:8px 9px 0 var(--ink)" />
     <${FireText} text="The results are in" class="reveal-big" />
     <p class="hud" style="font-size:clamp(1.2rem,4vw,1.8rem);color:var(--text)">
-      ${plural(step.nights, 'dinner')} · ${plural(step.cards, 'scorecard')} · 1 champion
+      ${plural(step.nights, 'dinner')} · ${plural(step.cards, 'scorecard')}
     </p>
     <p class="muted">${a.state.event.prize ? `Playing for: ${a.state.event.prize}` : ''}</p>
   </div>`;
@@ -47,7 +47,7 @@ function ScoreCards({ cards, fast = false }) {
 function Quotes({ quotes, delay }) {
   if (!quotes?.length) return null;
   return html`<div class="quotes">
-    <div class="kicker center" style="opacity:0;animation:pop-in .4s ease forwards;animation-delay:${delay}s">🚕 Taxi confessionals</div>
+    <div class="kicker center" style="opacity:0;animation:pop-in .4s ease forwards;animation-delay:${delay}s">Taxi confessionals</div>
     ${quotes.map((q, i) => html`<div class="quote" key=${i} style=${`animation-delay:${delay + 0.3 + i * 0.6}s`}>“${q}”</div>`)}
   </div>`;
 }
@@ -86,7 +86,7 @@ function Drumroll({ step }) {
   return html`<div class="center stack-lg">
     <div style="font-size:4rem" class="drumroll" aria-hidden="true">🥁</div>
     <${FireText} text="And the winner is" class="reveal-big drumroll" />
-    ${step.tie && html`<p class="hud" style="font-size:1.4rem">Plot twist: it's a tie</p>`}
+    ${step.tie && html`<p class="hud" style="font-size:1.4rem">It’s a tie</p>`}
   </div>`;
 }
 
@@ -206,7 +206,7 @@ function Waiting({ presenter }) {
           <p>${s.counts.submitted} of ${s.counts.expected} scorecards are in.</p>
           ${missing.length > 0 && html`<p class="small muted">Missing: ${missing.join(', ')}</p>`}
           <p class="small muted">Starting locks every scorecard. Put this screen on the TV, then tap Next to reveal each team from last place to first. Everyone else can follow on their phones.</p>
-          <button class="btn lg block" disabled=${busy} onClick=${start}>${busy ? 'Starting…' : '🎬 Start the Grand Reveal'}</button>
+          <button class="btn lg block" disabled=${busy} onClick=${start}>${busy ? 'Starting…' : 'Start the Grand Reveal'}</button>
         </div>`
       : html`<p class="lede" style="margin:0 auto">It hasn't started yet. Keep this page open and it will kick off by itself when the organiser hits go.</p>`}
   </div>`;
@@ -307,7 +307,7 @@ export function RevealView() {
       ${canDrive
         ? html`<button class="btn dark" disabled=${index === 0 || busy} onClick=${() => move('prev')}><${Icon} name="back" size="20" />Back</button>
             <button class="btn" disabled=${index >= total - 1 || busy} onClick=${() => move('next')}>Next<${Icon} name="next" size="20" /></button>`
-        : html`<span class="small muted">📺 Following the organiser's screen</span>`}
+        : html`<span class="small muted">Following the organiser’s screen</span>`}
     </div>`}
   </div>`;
 }

@@ -25,7 +25,7 @@ function ScoreList() {
           return html`<div class="panel tight" key=${n.id} style="opacity:.85">
             <div class="row between">
               <span class="row"><span class="night-num">N${n.number}</span><strong>You host this one</strong></span>
-              <span class="pill hot">🏠 Host</span>
+              <span class="pill hot">Host</span>
             </div>
             <p class="small muted" style="margin-top:6px">No scoring your own dinner. Make it a banger.</p>
           </div>`;
@@ -112,7 +112,7 @@ function Scorecard({ nightId }) {
         <${TeamBadge} team=${host} size=${50} />
         <${FireText} tag="h1" text=${host?.name || ''} style="font-size:clamp(2rem,9vw,2.8rem)" />
       </div>
-      ${night.theme && html`<p class="muted">🎭 ${night.theme}</p>`}
+      ${night.theme && html`<p class="muted">Theme: ${night.theme}</p>`}
     </header>`;
 
   if (night.hostTeamId === mine) {
@@ -191,7 +191,7 @@ function Scorecard({ nightId }) {
       </div>
       <div class="center">
         <button type="button" class="link-btn" style="color:#8a1d12" aria-pressed=${overall === 0} onClick=${() => pick(0)}>
-          ${overall === 0 ? '💀 Zero selected. Savage.' : '💀 Give them a zero'}
+          ${overall === 0 ? 'Zero selected' : 'Give them a zero'}
         </button>
       </div>
 

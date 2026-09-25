@@ -45,7 +45,7 @@ export function CrewsView({ id }) {
   }, [id]);
   return html`<div class="page stack-lg">
     <${PageTitle} kicker="Character select" title="The crews">
-      ${a.state.teams.length} teams of two. One kitchen each. No mercy.
+      ${a.state.teams.length} teams of two. Each team cooks once.
     <//>
     <div class="grid-2">
       ${a.state.teams.map((t) => html`<${CrewCard} key=${t.id} team=${t} highlight=${id === t.id} />`)}

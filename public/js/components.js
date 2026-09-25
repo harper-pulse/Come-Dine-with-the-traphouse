@@ -175,7 +175,7 @@ export function NightPill({ night, now = Date.now() }) {
   if (status === 'open') return html`<span class="pill live">Scoring open</span>`;
   if (status === 'closed') return html`<span class="pill lock">Locked</span>`;
   if (!night.startsAt) return html`<span class="pill">Date TBC</span>`;
-  if (isToday(night.startsAt, tz, now)) return html`<span class="pill hot">Tonight 🔥</span>`;
+  if (isToday(night.startsAt, tz, now)) return html`<span class="pill hot">Tonight</span>`;
   return html`<span class="pill">Upcoming</span>`;
 }
 

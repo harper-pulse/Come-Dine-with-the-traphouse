@@ -34,7 +34,7 @@ function NightCard({ night, now }) {
       </div>
       <${TeamChip} team=${host} size=${42} sub=${`Hosts: ${memberNames(host)}`} />
       ${(night.theme || night.suburb) && html`<p class="small" style="margin-top:8px">
-        ${night.theme && html`<span>🎭 ${night.theme}</span>`}${night.theme && night.suburb ? ' · ' : ''}${night.suburb && html`<span>📍 ${night.suburb}</span>`}
+        ${night.theme && html`<span>${night.theme}</span>`}${night.theme && night.suburb ? ' · ' : ''}${night.suburb && html`<span>${night.suburb}</span>`}
       </p>`}
       <div class="guests" aria-label="Guests">
         ${night.guests.map((id) => {
@@ -71,7 +71,7 @@ function Matrix({ now }) {
           <th class="team-cell" scope="row"><span class="row" style="gap:8px"><${TeamDot} team=${t} />${t.name}</span></th>
           ${s.nights.map((n) => n.hostTeamId === t.id
             ? html`<td key=${n.id} class=${`cell-host ${current?.id === n.id ? 'now' : ''}`}>HOST</td>`
-            : html`<td key=${n.id} class=${`cell-guest ${current?.id === n.id ? 'now' : ''}`}>${n.submitted.includes(t.id) ? '✓' : '🍽️'}</td>`)}
+            : html`<td key=${n.id} class=${`cell-guest ${current?.id === n.id ? 'now' : ''}`}>${n.submitted.includes(t.id) ? '✓' : '·'}</td>`)}
         </tr>`)}
       </tbody>
     </table>
@@ -91,7 +91,7 @@ export function RotationView() {
     <div class="stack">${a.state.nights.map((n) => html`<${NightCard} key=${n.id} night=${n} now=${now} />`)}</div>
     <section class="stack">
       <${FireText} tag="h2" text="Who's where" style="font-size:2rem" />
-      <p class="muted small">HOST means cooking. 🍽️ means eating and judging. A tick means that team's scorecard is in.</p>
+      <p class="muted small">HOST means cooking. A dot means eating and judging, and a tick means that team’s scorecard is in.</p>
       <${Matrix} now=${now} />
     </section>
   </div>`;

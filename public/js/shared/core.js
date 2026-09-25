@@ -36,9 +36,9 @@ export const DEFAULT_RULES = [
   'At the end of the night each guest team fills in ONE scorecard for the hosts: a secret overall score out of 10, plus a star rating for each course, the drinks and the vibe.',
   'No scoring your own dinner. The portal will not let you anyway.',
   'Scores are sealed. Nobody sees them, not even the organiser, until the Grand Reveal.',
-  'Scorecards lock at midday the day after each dinner. Late is the same as never.',
-  'Highest average score wins. Tie-break: the most stars. Still tied? Shared glory.',
-  'Tactical scoring will be noticed. And remembered. Forever.',
+  'Scorecards lock at midday the day after each dinner. A late scorecard doesn’t count.',
+  'Highest average score wins. Ties are broken on stars. If it’s still tied, the title is shared.',
+  'Tactical scoring gets noticed.',
 ];
 
 // Labels for each overall score, shown on the scorecard and in the reveal.

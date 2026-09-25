@@ -109,7 +109,7 @@ export function PhotosView({ nightId }) {
   const groups = s.nights.map((n) => ({ night: n, items: photos.filter((p) => p.nightId === n.id) })).filter((g) => g.items.length);
 
   return html`<div class="page stack-lg">
-    <${PageTitle} kicker="The gallery" title="Food pics">Every course, every crime scene.<//>
+    <${PageTitle} kicker="The gallery" title="Food pics">Photos from every dinner.<//>
     <div class="seg" role="group" aria-label="Filter by night">
       <button type="button" aria-pressed=${filter === 'all'} onClick=${() => setFilter('all')}>All</button>
       ${s.nights.map((n) => html`<button type="button" key=${n.id} aria-pressed=${filter === n.id} onClick=${() => setFilter(n.id)}>N${n.number}</button>`)}
@@ -123,7 +123,7 @@ export function PhotosView({ nightId }) {
     ${groups.length === 0
       ? html`<div class="panel"><${Empty} icon="📸" title="No photos yet">Snap the starter before anyone eats it.<//></div>`
       : groups.map((g) => html`<section class="stack" key=${g.night.id}>
-          <${FireText} tag="h2" text=${`Night ${g.night.number}: ${teamById(g.night.hostTeamId)?.name || ''}`} style="font-size:1.5rem" />
+          <${FireText} tag="h2" text=${`Night ${g.night.number} · ${teamById(g.night.hostTeamId)?.name || ''}`} style="font-size:1.5rem" />
           <div class="photo-grid">
             ${g.items.map((p) => html`<button key=${p.id} onClick=${() => setOpen(p)} aria-label=${p.caption || 'Open photo'}>
               <img src=${p.url} alt=${p.caption || 'Food photo'} loading="lazy" />

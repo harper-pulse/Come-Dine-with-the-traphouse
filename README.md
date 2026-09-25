@@ -1,6 +1,6 @@
 # Come Dine With The Traphouse
 
-The event portal for our Come Dine With Me series: 5 teams of 2, 5 nights, 1 champion.
+The event portal for our Come Dine With Me series. Five teams of two, and every team hosts one dinner.
 
 ![Poster](public/img/og.jpg)
 
@@ -13,7 +13,7 @@ The event portal for our Come Dine With Me series: 5 teams of 2, 5 nights, 1 cha
 - **The Grand Reveal.** A presenter mode for the TV: each team from last place to first, scores flipping in one guest at a time, the taxi confessionals, a WASTED screen for last place, a drum roll, MISSION PASSED with money rain for the winner, then the awards. Everyone else can follow along live on their phones.
 - **Awards.** Best Starter/Main/Dessert/Drinks/Vibe, Harshest Critic, Most Generous, Highest Single Score, Lowest Blow and Biggest Beef.
 - **Hosting tools.** Hosts set their theme, dress code, address (only visible to logged-in teams), menu (kept secret until they reveal it) and a message for guests. They can also see their guests' dietary requirements.
-- **GTA portraits.** Each team uploads a photo of the two of them, plus one of each player, and Google's Nano Banana Pro (the same image AI family the poster was made with) redraws them in the poster's GTA loading-screen style, using panels from the poster as its style reference. Portraits made elsewhere, like the Gemini app, can be uploaded as is. They're used for the team badges, crew cards and the Grand Reveal.
+- **GTA portraits.** Each team uploads a photo of the two of them, plus one of each player, and Google's Nano Banana Pro (the same image AI family the poster was made with) redraws them in the poster's GTA cover art style, using panels from the poster as its style reference and the same wording as the poster prompt. Portraits made elsewhere, like the Gemini app, can be uploaded as is. They're used for the team badges, crew cards and the Grand Reveal.
 - **GTA touches throughout.** White-on-black GTA lettering, a black and white screen with "mission passed!" when you hand in a scorecard, WASTED and BUSTED screens, a GTA-style loading screen and GTA V style notifications.
 - **Food photos.** Upload pics per night (optional, needs a Vercel Blob store).
 - **Organiser control room.** Setup wizard, team names and characters (cropped from the poster), invite links and QR codes, dates and hosts, scoring overrides, a scorecard tracker, CSV export, backup and restore.
@@ -27,7 +27,7 @@ You only need to do this once. It takes about 5 minutes.
 2. **Add the database.** Open the project, go to the **Storage** tab, click **Create Database**, pick **Upstash for Redis** and choose the free plan and the **Sydney** region (the API runs in Sydney too, so it stays fast). Connect it to the project. Vercel adds the `KV_REST_API_URL` and `KV_REST_API_TOKEN` settings for you.
 3. **(Optional) Switch on photos.** In the same Storage tab, create a **Blob** store and connect it to the project.
 4. **Redeploy.** Go to **Deployments**, open the latest one and click **Redeploy**, so it picks up the new storage.
-5. **Claim the organiser role straight away.** Open your site and tap **I'm the organiser**. Whoever does this first becomes the organiser, so do it before sharing the link. (Prefer to lock it down first? Add an `ADMIN_PIN` environment variable in Vercel before deploying. Then only that PIN can set things up.)
+5. **Claim the organiser role straight away.** Open your site and tap **I'm the organiser**. Whoever does this first becomes the organiser, so do it before sharing the link. (To lock it down first, add an `ADMIN_PIN` environment variable in Vercel before deploying. Then only that PIN can set things up.)
 6. **Run the setup wizard.** Pick your PIN, enter team names and players, and set the first dinner date and the hosting order.
 7. **Send the invites.** In **Control room > Teams & invites**, tap **Send invite** for each team. It opens your phone's share sheet with a ready-made WhatsApp message including their secret link. There's also **Copy all invites** and a QR code per team.
 
@@ -78,7 +78,7 @@ With no Redis keys set, the dev server stores everything in a local file, so you
 
 ### Settings (environment variables)
 
-| Name | Needed? | What it does |
+| Name | Required | What it does |
 | --- | --- | --- |
 | `KV_REST_API_URL`, `KV_REST_API_TOKEN` | Yes | Added automatically when you connect Upstash Redis. |
 | `BLOB_READ_WRITE_TOKEN` | For photos | Added automatically when you connect a Blob store. |
