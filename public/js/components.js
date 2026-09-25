@@ -68,15 +68,16 @@ export function PageTitle({ kicker, title, tone = '', children }) {
 /* People                                                              */
 /* ------------------------------------------------------------------ */
 
-export function avatarSrc(member) {
-  if (member?.avatar === 'custom' && member.avatarUrl) return member.avatarUrl;
+// Small circles get the 256px copy of a GTA portrait when there is one.
+export function avatarSrc(member, size = 44) {
+  if (member?.avatar === 'custom' && member.avatarUrl) return (size <= 128 && member.avatarThumb) || member.avatarUrl;
   if (member?.avatar && member.avatar !== 'custom') return `/img/crew/${member.avatar}.webp`;
   return '';
 }
 
 export function Avatar({ member, team, size = 44 }) {
   const style = `--size:${size}px;--team:${team?.color || 'var(--flame-3)'}`;
-  const src = avatarSrc(member);
+  const src = avatarSrc(member, size);
   if (src) {
     return html`<span class="avatar" style=${style}>
       <img src=${src} alt="" loading="lazy" width=${size} height=${size} />
@@ -97,10 +98,21 @@ export function TeamBadge({ team, size = 44 }) {
   if (!team) return null;
   if (team.portrait) {
     return html`<span class="avatar portrait-badge" style=${`--size:${Math.round(size * 1.25)}px;--team:${team.color}`}>
-      <img src=${team.portrait} alt="" loading="lazy" width=${size} height=${size} />
+      <img src=${team.portraitThumb || team.portrait} alt="" loading="lazy" width=${size} height=${size} />
     </span>`;
   }
   return html`<${AvatarPair} team=${team} size=${size} />`;
+}
+
+// A single circle for tight spots like the header: the team portrait, else the first player.
+export function TeamFace({ team, size = 28 }) {
+  if (!team) return null;
+  if (team.portrait) {
+    return html`<span class="avatar portrait-badge" style=${`--size:${size}px;--team:${team.color}`}>
+      <img src=${team.portraitThumb || team.portrait} alt="" width=${size} height=${size} />
+    </span>`;
+  }
+  return html`<${Avatar} member=${team.members[0]} team=${team} size=${size} />`;
 }
 
 // Big comic-panel version of the team portrait, for crew cards and the reveal.
@@ -143,7 +155,7 @@ export function Stars({ value = 0, max = MAX_STARS, onChange, size, label }) {
         <svg viewBox="0 0 24 24"><path d=${STAR_PATH} /></svg></span>`)}
     </span>`;
   }
-  return html`<span class="stars" style=${style} role="radiogroup" aria-label=${label}>
+  return html`<span class="stars rating" style=${style} role="radiogroup" aria-label=${label}>
     ${items.map((i) => html`<button key=${i} type="button" class=${i <= (value || 0) ? 'on' : 'off'}
       role="radio" aria-checked=${i === value} aria-label=${`${i} star${i > 1 ? 's' : ''}`}
       onClick=${() => {
@@ -224,8 +236,23 @@ export function Empty({ icon = '🍽️', title, children, action }) {
 /* Sheet                                                               */
 /* ------------------------------------------------------------------ */
 
+// Stops the page behind a sheet or lightbox from scrolling while it's open.
+let scrollLocks = 0;
+export function useScrollLock(on) {
+  useEffect(() => {
+    if (!on) return;
+    scrollLocks++;
+    document.documentElement.classList.add('no-scroll');
+    return () => {
+      scrollLocks = Math.max(0, scrollLocks - 1);
+      if (!scrollLocks) document.documentElement.classList.remove('no-scroll');
+    };
+  }, [on]);
+}
+
 export function Sheet({ open, onClose, children, paper = false, label }) {
   const ref = useRef();
+  useScrollLock(open);
   useEffect(() => {
     if (!open) return;
     const onKey = (e) => e.key === 'Escape' && onClose?.();

@@ -73,7 +73,13 @@
   --font-hud: 'Barlow Condensed', 'Rubik', system-ui, sans-serif;
   --font-body: 'Rubik', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --nav-h: 68px;
+  --safe-t: env(safe-area-inset-top, 0px);
   --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-l: env(safe-area-inset-left, 0px);
+  --safe-r: env(safe-area-inset-right, 0px);
+  /* Side padding that also clears the notch when a phone is on its side. */
+  --gutter-l: max(16px, var(--safe-l));
+  --gutter-r: max(16px, var(--safe-r));
   color-scheme: dark;
 }
 
@@ -124,9 +130,24 @@ textarea {
   color: inherit;
 }
 
+a,
+button,
+input,
+label,
+select,
+summary,
+textarea {
+  touch-action: manipulation;
+}
+
 :focus-visible {
   outline: 3px solid var(--flame-1);
   outline-offset: 2px;
+}
+
+html.no-scroll,
+html.no-scroll body {
+  overflow: hidden;
 }
 
 .sr-only {
@@ -155,7 +176,7 @@ textarea {
   width: 100%;
   max-width: 980px;
   margin: 0 auto;
-  padding: 16px 16px 0;
+  padding: 16px var(--gutter-r) 0 var(--gutter-l);
 }
 
 .page.narrow {
@@ -511,7 +532,7 @@ p {
 }
 
 .btn.sm {
-  min-height: 38px;
+  min-height: 40px;
   padding: 6px 12px;
   font-size: 0.98rem;
   box-shadow: 3px 3px 0 var(--ink);
@@ -684,6 +705,21 @@ p {
   color: var(--ink);
 }
 
+/* Phones: equal-width options on one line, labels wrap inside their button. */
+@media (max-width: 520px) {
+  .seg {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+    gap: 4px;
+  }
+  .seg button {
+    min-height: 40px;
+    padding: 6px;
+    line-height: 1.1;
+  }
+}
+
 /* ------------------------------------------------------------------ */
 /* Header & nav                                                        */
 /* ------------------------------------------------------------------ */
@@ -692,6 +728,8 @@ p {
   position: sticky;
   top: 0;
   z-index: 40;
+  /* Home-screen app mode draws under the status bar, so clear it. */
+  padding-top: var(--safe-t);
   background: rgba(18, 14, 24, 0.86);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -701,7 +739,7 @@ p {
 .topbar-inner {
   max-width: 980px;
   margin: 0 auto;
-  padding: 8px 16px;
+  padding: 8px var(--gutter-r) 8px var(--gutter-l);
   display: flex;
   align-items: center;
   gap: 12px;
@@ -714,7 +752,7 @@ p {
   gap: 10px;
   text-decoration: none;
   color: inherit;
-  min-width: 0;
+  flex: none;
 }
 
 .brand-mark {
@@ -776,6 +814,7 @@ p {
   display: flex;
   align-items: center;
   gap: 8px;
+  min-width: 0;
 }
 
 .who-chip {
@@ -791,12 +830,23 @@ p {
   font-weight: 600;
   font-size: 0.9rem;
   max-width: 190px;
+  min-width: 0;
 }
 
 .who-chip span {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* Small phones: just the team's face, so the logo keeps its room. */
+@media (max-width: 400px) {
+  .who-chip {
+    padding: 3px;
+  }
+  .who-chip > span:not(.avatar) {
+    display: none;
+  }
 }
 
 .bottom-nav {
@@ -815,6 +865,7 @@ p {
 .bottom-nav-inner {
   max-width: 640px;
   margin: 0 auto;
+  padding: 0 var(--safe-r) 0 var(--safe-l);
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   height: var(--nav-h);
@@ -904,7 +955,9 @@ p {
   width: 100%;
   max-width: 560px;
   max-height: 88vh;
+  max-height: calc(100dvh - var(--safe-t) - 40px);
   overflow: auto;
+  overscroll-behavior: contain;
   background: var(--bg-2);
   border: 3px solid var(--ink);
   border-bottom: 0;
@@ -970,7 +1023,7 @@ p {
 .toasts {
   position: fixed;
   left: 50%;
-  top: 70px;
+  top: calc(70px + var(--safe-t));
   transform: translateX(-50%);
   z-index: 120;
   display: grid;
@@ -1041,6 +1094,7 @@ p {
   align-items: center;
   gap: 10px;
   min-width: 0;
+  max-width: 100%;
   text-decoration: none;
   color: inherit;
 }
@@ -1055,10 +1109,8 @@ p {
 
 .team-chip .team-members {
   font-size: 0.82rem;
+  line-height: 1.3;
   color: var(--muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .panel.paper .team-chip .team-members {
@@ -1147,6 +1199,14 @@ p {
 
 .stars span {
   cursor: default;
+}
+
+.stars.rating {
+  gap: 0;
+}
+
+.stars.rating button {
+  padding: 4px;
 }
 
 .stars svg {
@@ -1378,6 +1438,28 @@ table.board td:last-child {
   outline-offset: -3px;
 }
 
+@media (max-width: 520px) {
+  .matrix {
+    font-size: 0.8rem;
+  }
+  .matrix th,
+  .matrix td {
+    padding: 7px 3px;
+  }
+  .matrix th {
+    letter-spacing: 0.02em;
+  }
+  .matrix th.team-cell {
+    white-space: normal;
+    line-height: 1.15;
+    padding-left: 6px;
+  }
+  .matrix td.cell-host {
+    font-size: 0.68rem;
+    letter-spacing: 0;
+  }
+}
+
 .tag {
   display: inline-block;
   padding: 1px 8px;
@@ -1456,6 +1538,57 @@ table.board td:last-child {
   }
 }
 
+.mini-night {
+  display: grid;
+  grid-template-columns: 40px 6px minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 10px;
+  row-gap: 6px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.mini-night .big {
+  font-size: 2.3rem;
+  text-align: center;
+}
+
+.mini-night .team-bar {
+  height: 100%;
+}
+
+.mini-night .name {
+  font-size: 1.15rem;
+  line-height: 1.1;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+.mini-night .status {
+  display: grid;
+  gap: 6px;
+  justify-items: end;
+}
+
+@media (max-width: 520px) {
+  .mini-night {
+    grid-template-columns: 40px 6px minmax(0, 1fr);
+  }
+  .mini-night .big,
+  .mini-night .team-bar {
+    grid-row: 1 / 3;
+  }
+  .mini-night .status {
+    grid-column: 3;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 10px;
+  }
+}
+
 .next-up .host-line {
   display: flex;
   align-items: center;
@@ -1524,6 +1657,52 @@ table.board td:last-child {
   color: var(--muted);
   line-height: 1.15;
   margin-top: 4px;
+}
+
+.night-card .date-inline {
+  display: none;
+}
+
+.night-card .nc-head {
+  margin-bottom: 8px;
+}
+
+@media (max-width: 520px) {
+  .night-card {
+    grid-template-columns: auto minmax(0, 1fr);
+    column-gap: 12px;
+    row-gap: 0;
+  }
+  .night-card .nc-body {
+    display: contents;
+  }
+  .night-card .num-col {
+    grid-column: 1;
+    grid-row: 1;
+    align-self: center;
+  }
+  .night-card .big-num {
+    font-size: 3rem;
+  }
+  .night-card .num-col .date {
+    display: none;
+  }
+  .night-card .nc-head {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: center;
+    margin-bottom: 0;
+  }
+  .night-card .date-inline {
+    display: block;
+    margin-top: 2px;
+  }
+  .night-card .nc-body > :not(.nc-head) {
+    grid-column: 1 / -1;
+  }
+  .night-card .nc-body > .team-chip {
+    margin-top: 12px;
+  }
 }
 
 .guests {
@@ -1619,9 +1798,10 @@ table.board td:last-child {
 
 .cat-row {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: 6px 10px;
   padding: 10px 0;
   border-bottom: 2px dashed #d7c49c;
 }
@@ -1646,9 +1826,14 @@ table.board td:last-child {
   --star: 34px;
 }
 
-@media (max-width: 380px) {
-  .cat-row .stars {
-    --star: 29px;
+@media (max-width: 520px) {
+  .cat-row.rate {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .cat-row.rate .stars {
+    --star: 36px;
+    justify-content: space-between;
   }
 }
 
@@ -1788,6 +1973,13 @@ table.board td:last-child {
   gap: 10px;
 }
 
+@media (max-width: 600px) {
+  .photo-grid {
+    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+    gap: 8px;
+  }
+}
+
 .photo-grid button {
   padding: 0;
   border: 3px solid var(--ink);
@@ -1814,12 +2006,14 @@ table.board td:last-child {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 16px;
+  padding: calc(16px + var(--safe-t)) var(--gutter-r) calc(16px + var(--safe-b)) var(--gutter-l);
+  overscroll-behavior: contain;
   animation: fade-in 0.15s ease;
 }
 
 .lightbox img {
   max-height: 78vh;
+  max-height: 72dvh;
   max-width: 100%;
   border: 3px solid var(--ink);
   border-radius: 12px;
@@ -1846,7 +2040,7 @@ table.board td:last-child {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 10px 14px;
+  padding: calc(10px + var(--safe-t)) max(14px, var(--safe-r)) 10px max(14px, var(--safe-l));
   border-bottom: 3px solid var(--ink);
   background: rgba(9, 8, 12, 0.6);
   flex: none;
@@ -1873,7 +2067,7 @@ table.board td:last-child {
   gap: 10px;
   align-items: center;
   justify-content: center;
-  padding: 10px 14px calc(10px + var(--safe-b));
+  padding: 10px max(14px, var(--safe-r)) calc(10px + var(--safe-b)) max(14px, var(--safe-l));
   border-top: 3px solid var(--ink);
   background: rgba(9, 8, 12, 0.75);
 }
@@ -2095,6 +2289,7 @@ canvas.fx {
 
 .boot {
   min-height: 100vh;
+  min-height: 100dvh;
   display: grid;
   place-items: center;
   align-content: center;
@@ -2127,7 +2322,7 @@ canvas.fx {
   text-align: center;
   color: var(--faint);
   font-size: 0.85rem;
-  padding: 30px 16px 10px;
+  padding: 30px var(--gutter-r) 10px var(--gutter-l);
 }
 
 .footer a {
@@ -2347,7 +2542,7 @@ canvas.fx {
 }
 
 .reveal-top .btn.sm {
-  min-height: 38px;
+  min-height: 40px;
   padding: 6px 10px;
 }
 
@@ -2362,7 +2557,7 @@ canvas.fx {
   }
   .reveal-top {
     gap: 8px;
-    padding: 8px 10px;
+    padding: calc(8px + var(--safe-t)) max(10px, var(--safe-r)) 8px max(10px, var(--safe-l));
   }
 }
 

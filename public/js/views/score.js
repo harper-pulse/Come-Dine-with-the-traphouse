@@ -197,7 +197,7 @@ function Scorecard({ nightId }) {
 
       <div>
         <div class="kicker" style="color:#b33a12;margin-bottom:4px">Wanted level</div>
-        ${cats.map((c) => html`<div class="cat-row" key=${c.id}>
+        ${cats.map((c) => html`<div class="cat-row rate" key=${c.id}>
           <span class="cat-name"><span class="emoji" aria-hidden="true">${c.emoji}</span>${c.label}</span>
           <${Stars} value=${stars[c.id] || 0} label=${`${c.label} rating`} onChange=${(v) => setStars({ ...stars, [c.id]: v })} />
         </div>`)}

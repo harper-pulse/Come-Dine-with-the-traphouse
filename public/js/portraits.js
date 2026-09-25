@@ -5,7 +5,7 @@ import { html, useState, useEffect, useRef } from './lib.js';
 import { app, syncTo, loadTeam, loadAdmin, emit } from './store.js';
 import { FireText, Sheet, Icon, Avatar } from './components.js';
 import { celebrate, toast, sound } from './fx.js';
-import { finalAvatar } from './imaging.js';
+import { portraitUpload } from './imaging.js';
 import { compressImage } from './util.js';
 
 const TIPS = [
@@ -29,7 +29,8 @@ async function avatarFetch(method, params, { teamId, body } = {}) {
       method,
       headers: {
         authorization: `Bearer ${authFor(teamId)}`,
-        ...(body ? { 'content-type': body.type || 'image/jpeg' } : {}),
+        // FormData sets its own content type (with the multipart boundary).
+        ...(body && !(body instanceof FormData) ? { 'content-type': body.type || 'image/jpeg' } : {}),
       },
       body,
     });
@@ -128,8 +129,8 @@ function Studio({ open, onClose, target, label, kind, teamId, ai, photo }) {
   const keep = async () => {
     setStep('saving');
     try {
-      const final = await finalAvatar(result.blob);
-      const res = await avatarFetch('POST', { action: 'save', target }, { teamId, body: final });
+      const upload = await portraitUpload(result.blob);
+      const res = await avatarFetch('POST', { action: 'save', target }, { teamId, body: upload });
       const { v } = await res.json();
       await refreshAfter(v, teamId);
       onClose();

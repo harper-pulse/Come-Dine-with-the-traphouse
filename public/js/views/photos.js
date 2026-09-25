@@ -1,10 +1,10 @@
 import { html, useState, useEffect } from '../lib.js';
 import { useApp, app, teamById, syncTo, myTeamId } from '../store.js';
 import { request } from '../api.js';
-import { FireText, PageTitle, Empty, TeamLogin, Icon } from '../components.js';
+import { FireText, PageTitle, Empty, TeamLogin, Icon, useScrollLock } from '../components.js';
 import { toast, sound } from '../fx.js';
 import { currentNight } from '../shared/core.js';
-import { compressImage } from '../util.js';
+import { compressPhoto } from '../util.js';
 
 function Uploader({ defaultNight }) {
   const a = useApp();
@@ -22,9 +22,12 @@ function Uploader({ defaultNight }) {
     for (const file of files) {
       setBusy(`Uploading ${done + 1} of ${files.length}…`);
       try {
-        const { blob, w, h } = await compressImage(file);
+        const { blob, thumb, w, h } = await compressPhoto(file);
         const params = new URLSearchParams({ nightId, caption, w, h });
-        const r = await request('POST', `/api/photos?${params}`, { token, raw: blob, headers: { 'content-type': 'image/jpeg' } });
+        const form = new FormData();
+        form.append('image', blob, 'photo.jpg');
+        form.append('thumb', thumb, 'photo-thumb.jpg');
+        const r = await request('POST', `/api/photos?${params}`, { token, raw: form });
         done++;
         await syncTo(r.v);
       } catch (err) {
@@ -62,6 +65,7 @@ function Uploader({ defaultNight }) {
 
 function Lightbox({ photo, onClose }) {
   const a = useApp();
+  useScrollLock(Boolean(photo));
   if (!photo) return null;
   const team = teamById(photo.teamId);
   const night = a.state.nights.find((n) => n.id === photo.nightId);
@@ -126,7 +130,7 @@ export function PhotosView({ nightId }) {
           <${FireText} tag="h2" text=${`Night ${g.night.number} · ${teamById(g.night.hostTeamId)?.name || ''}`} style="font-size:1.5rem" />
           <div class="photo-grid">
             ${g.items.map((p) => html`<button key=${p.id} onClick=${() => setOpen(p)} aria-label=${p.caption || 'Open photo'}>
-              <img src=${p.url} alt=${p.caption || 'Food photo'} loading="lazy" />
+              <img src=${p.thumb || p.url} alt=${p.caption || 'Food photo'} loading="lazy" />
             </button>`)}
           </div>
         </section>`)}

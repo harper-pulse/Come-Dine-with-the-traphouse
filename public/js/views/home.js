@@ -135,8 +135,8 @@ function YourTeam({ now }) {
         else right = html`<span class="pill">${n.startsAt ? fmtDay(n.startsAt, zone) : 'TBC'}</span>`;
         return html`<div class="row between" key=${n.id}>
           <span class="row" style="min-width:0"><span class="night-num">N${n.number}</span>
-            <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${teamById(n.hostTeamId)?.name}</span></span>
-          ${right}
+            <span style="line-height:1.2">${teamById(n.hostTeamId)?.name}</span></span>
+          <span style="flex:none">${right}</span>
         </div>`;
       })}
     </div>
@@ -180,18 +180,16 @@ function RotationMini({ now }) {
     <div class="stack">
       ${a.state.nights.map((n) => {
         const host = teamById(n.hostTeamId);
-        return html`<a key=${n.id} class="panel tight" href=${`#/night/${n.id}`} style="display:block;text-decoration:none;color:inherit">
-          <div class="row">
-            <${FireText} text=${String(n.number)} style="font-size:2.3rem;width:40px;text-align:center" />
-            <span class="team-bar" style=${`--team:${host?.color}`}></span>
-            <div style="flex:1;min-width:0">
-              <div class="team-name display" style="font-size:1.15rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${host?.name}</div>
-              <div class="small muted">${n.startsAt ? `${fmtDay(n.startsAt, zone)} · ${fmtTime(n.startsAt, zone)}` : 'Date TBC'}${n.theme ? ` · ${n.theme}` : ''}</div>
-            </div>
-            <div class="center" style="display:grid;gap:6px;justify-items:end">
-              <${NightPill} night=${n} now=${now} />
-              ${nightStatus(n, now) !== 'upcoming' && html`<${Dots} on=${n.submitted.length} total=${n.guests.length} />`}
-            </div>
+        return html`<a key=${n.id} class="panel tight mini-night" href=${`#/night/${n.id}`}>
+          <${FireText} text=${String(n.number)} class="big" />
+          <span class="team-bar" style=${`--team:${host?.color}`}></span>
+          <div style="min-width:0">
+            <div class="name display">${host?.name}</div>
+            <div class="small muted">${n.startsAt ? `${fmtDay(n.startsAt, zone)} · ${fmtTime(n.startsAt, zone)}` : 'Date TBC'}${n.theme ? ` · ${n.theme}` : ''}</div>
+          </div>
+          <div class="status">
+            <${NightPill} night=${n} now=${now} />
+            ${nightStatus(n, now) !== 'upcoming' && html`<${Dots} on=${n.submitted.length} total=${n.guests.length} />`}
           </div>
         </a>`;
       })}

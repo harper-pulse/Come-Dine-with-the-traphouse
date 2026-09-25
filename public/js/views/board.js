@@ -27,7 +27,7 @@ function Sealed() {
         return html`<div class="panel tight" key=${n.id}>
           <div class="row between">
             <span class="row" style="min-width:0"><span class="night-num">N${n.number}</span>
-              <${TeamDot} team=${host} /><strong style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${host?.name}</strong></span>
+              <${TeamDot} team=${host} /><strong style="line-height:1.2">${host?.name}</strong></span>
             <span class="row"><span class="hud-num" style="font-size:1.4rem;letter-spacing:.1em">??</span><${Dots} on=${n.submitted.length} total=${n.guests.length} /></span>
           </div>
         </div>`;

@@ -47,6 +47,15 @@ export function canvasToBlob(canvas, type = 'image/jpeg', quality = 0.86) {
 }
 
 // Final avatar file: square JPEG, sharp on big screens but still small.
-export async function finalAvatar(blob, size = 768) {
-  return canvasToBlob(await squareCanvas(blob, size), 'image/jpeg', 0.88);
+export async function finalAvatar(blob, size = 768, quality = 0.88) {
+  return canvasToBlob(await squareCanvas(blob, size), 'image/jpeg', quality);
+}
+
+// The portrait plus a 256px copy for badges and the header, as one upload.
+export async function portraitUpload(blob) {
+  const [image, thumb] = await Promise.all([finalAvatar(blob), finalAvatar(blob, 256, 0.82)]);
+  const form = new FormData();
+  form.append('image', image, 'portrait.jpg');
+  form.append('thumb', thumb, 'portrait-thumb.jpg');
+  return form;
 }

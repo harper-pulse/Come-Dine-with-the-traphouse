@@ -36,7 +36,7 @@ export function ProfileForm({ team, onSave, saving, includeDietary = true }) {
   useEffect(() => {
     setMembers((current) => current.map((m) => {
       const fresh = team.members.find((x) => x.id === m.id);
-      return fresh ? { ...m, avatar: fresh.avatar, avatarUrl: fresh.avatarUrl } : m;
+      return fresh ? { ...m, avatar: fresh.avatar, avatarUrl: fresh.avatarUrl, avatarThumb: fresh.avatarThumb } : m;
     }));
   }, [avatarKey]);
   const setMember = (id, patch) => setMembers(members.map((m) => (m.id === id ? { ...m, ...patch } : m)));

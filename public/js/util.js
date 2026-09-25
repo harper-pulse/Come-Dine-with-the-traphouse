@@ -140,25 +140,22 @@ function loadImage(src) {
   });
 }
 
-// Shrinks a phone photo to something sensible before upload.
-export async function compressImage(file, max = 1600, quality = 0.82) {
-  let source = null;
-  let w = 0;
-  let h = 0;
+async function decodeImage(file) {
   try {
-    source = await createImageBitmap(file, { imageOrientation: 'from-image' });
-    w = source.width;
-    h = source.height;
+    const source = await createImageBitmap(file, { imageOrientation: 'from-image' });
+    return { source, w: source.width, h: source.height };
   } catch {
     const url = URL.createObjectURL(file);
     try {
-      source = await loadImage(url);
-      w = source.naturalWidth;
-      h = source.naturalHeight;
+      const source = await loadImage(url);
+      return { source, w: source.naturalWidth, h: source.naturalHeight };
     } finally {
       setTimeout(() => URL.revokeObjectURL(url), 1000);
     }
   }
+}
+
+async function shrink({ source, w, h }, max, quality) {
   const scale = Math.min(1, max / Math.max(w, h));
   const cw = Math.max(1, Math.round(w * scale));
   const ch = Math.max(1, Math.round(h * scale));
@@ -169,6 +166,20 @@ export async function compressImage(file, max = 1600, quality = 0.82) {
   const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', quality));
   if (!blob) throw new Error('Could not read that photo.');
   return { blob, w: cw, h: ch };
+}
+
+// Shrinks a phone photo to something sensible before upload.
+export async function compressImage(file, max = 1600, quality = 0.82) {
+  return shrink(await decodeImage(file), max, quality);
+}
+
+// A food photo plus a small copy for the photo grids, so a gallery of 40
+// photos doesn't download 40 full-size images.
+export async function compressPhoto(file) {
+  const decoded = await decodeImage(file);
+  const full = await shrink(decoded, 1600, 0.82);
+  const thumb = await shrink(decoded, 480, 0.78);
+  return { ...full, thumb: thumb.blob };
 }
 
 export function siteUrl() {

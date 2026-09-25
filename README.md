@@ -17,7 +17,7 @@ The event portal for our Come Dine With Me series. Five teams of two, and every 
 - **GTA touches throughout.** White-on-black GTA lettering, a black and white screen with "mission passed!" when you hand in a scorecard, WASTED and BUSTED screens, a GTA-style loading screen and GTA V style notifications.
 - **Food photos.** Upload pics per night (optional, needs a Vercel Blob store).
 - **Organiser control room.** Setup wizard, team names and characters (cropped from the poster), invite links and QR codes, dates and hosts, scoring overrides, a scorecard tracker, CSV export, backup and restore.
-- Works on phones first, can be added to the home screen, and shows a proper link preview in WhatsApp and iMessage.
+- Built for phones first and checked on screens from 320 to 430 pixels wide. It can be added to the home screen, and shows a proper link preview in WhatsApp and iMessage.
 
 ## Getting it live on Vercel
 
@@ -74,6 +74,7 @@ With no Redis keys set, the dev server stores everything in a local file, so you
 - `public/js/shared/core.js` holds the rules and maths (night status, results, awards, the reveal script). The browser and the API both use it.
 - `api/` holds the Vercel Functions: `version`, `state`, `auth`, `team`, `admin`, `avatar`, `photos` and `calendar`. Shared server code is in `lib/` (`lib/gta-art.js` is the AI portrait artist).
 - Data lives in Upstash Redis. Phones poll a tiny, CDN-cached `/api/version` and only download the full state when something changes, so a whole series fits comfortably in Upstash's free tier.
+- Light on mobile data. Portraits and food photos are saved with a small copy for badges and photo grids (a 256px portrait is about 20 KB, against 150 KB for the full one), and `index.html` asks for every script at once instead of one import at a time.
 - Privacy: addresses, dietary requirements, team codes and every score stay off the public API until they're meant to be seen.
 
 ### Settings (environment variables)

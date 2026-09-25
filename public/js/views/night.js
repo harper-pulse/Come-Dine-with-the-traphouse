@@ -200,7 +200,7 @@ export function NightView({ id }) {
         <a class="link-btn" href=${`#/photos?night=${night.id}`}>${a.state.features.photos && a.team ? 'Add photos' : 'All photos'}</a>
       </div>
       ${photos.length
-        ? html`<div class="photo-grid">${photos.slice(0, 8).map((p) => html`<a key=${p.id} href=${`#/photos?night=${night.id}`} class="panel flush" style="aspect-ratio:1"><img src=${p.url} alt=${p.caption || 'Food photo'} loading="lazy" style="width:100%;height:100%;object-fit:cover" /></a>`)}</div>`
+        ? html`<div class="photo-grid">${photos.slice(0, 8).map((p) => html`<a key=${p.id} href=${`#/photos?night=${night.id}`} class="panel flush" style="aspect-ratio:1"><img src=${p.thumb || p.url} alt=${p.caption || 'Food photo'} loading="lazy" style="width:100%;height:100%;object-fit:cover" /></a>`)}</div>`
         : html`<div class="panel"><${Empty} icon="📸" title="No photos yet">Snap the courses on the night.<//></div>`}
     </section>
   </div>`;

@@ -202,12 +202,26 @@ await step('AI portraits: generate, keep, serve, limit and remove', async () => 
   assert.equal(img.headers.get('content-type'), 'image/jpeg');
   assert.match(img.headers.get('cache-control'), /immutable/);
 
-  const solo = await fetch(`${base}/api/avatar?action=save&target=t2a`, { method: 'POST', headers: { authorization: `Bearer ${teamTokens.t2}`, 'content-type': 'image/jpeg' }, body: JPEG });
+  // Phones send the portrait plus a small copy for badges in one upload.
+  const both = new FormData();
+  both.append('image', new Blob([JPEG], { type: 'image/jpeg' }), 'portrait.jpg');
+  both.append('thumb', new Blob([JPEG], { type: 'image/jpeg' }), 'portrait-thumb.jpg');
+  const solo = await fetch(`${base}/api/avatar?action=save&target=t2a`, { method: 'POST', headers: { authorization: `Bearer ${teamTokens.t2}` }, body: both });
   assert.equal(solo.status, 200);
   s = await state();
   const member = s.teams.find((t) => t.id === 't2').members.find((m) => m.id === 't2a');
   assert.equal(member.avatar, 'custom');
   assert.ok(member.avatarUrl.startsWith('/api/avatar?id=member%3At2a'));
+  assert.ok(member.avatarThumb.startsWith('/api/avatar?id=member%3At2a%3Athumb'));
+  const thumb = await fetch(base + member.avatarThumb);
+  assert.equal(thumb.status, 200);
+  assert.equal(thumb.headers.get('content-type'), 'image/jpeg');
+  assert.equal(s.teams.find((t) => t.id === 't2').portraitThumb, '');
+  const badThumb = new FormData();
+  badThumb.append('image', new Blob([JPEG], { type: 'image/jpeg' }), 'portrait.jpg');
+  badThumb.append('thumb', new Blob(['not an image']), 'portrait-thumb.jpg');
+  const refused = await fetch(`${base}/api/avatar?action=save&target=t2a`, { method: 'POST', headers: { authorization: `Bearer ${teamTokens.t2}` }, body: badThumb });
+  assert.equal(refused.status, 415);
 
   // Another team's player, junk bytes and a used-up allowance are all refused.
   const other = await fetch(`${base}/api/avatar?action=save&target=t3a`, { method: 'POST', headers: { authorization: `Bearer ${teamTokens.t2}` }, body: JPEG });
@@ -232,6 +246,8 @@ await step('AI portraits: generate, keep, serve, limit and remove', async () => 
   assert.equal(del.status, 200);
   s = await state();
   assert.equal(s.teams.find((t) => t.id === 't2').members.find((m) => m.id === 't2a').avatarUrl, '');
+  assert.equal(s.teams.find((t) => t.id === 't2').members.find((m) => m.id === 't2a').avatarThumb, '');
+  assert.equal((await fetch(base + member.avatarThumb)).status, 404);
   assert.equal(s.features.aiPortraits, true);
 });
 
@@ -370,6 +386,30 @@ await step('photos upload, show up and delete', async () => {
   assert.equal(s.photos.length, 0);
   const notImage = await api('POST', '/api/photos?nightId=n2', { token: teamTokens.t2, raw: Buffer.from('hello'), headers: { 'content-type': 'image/jpeg' } });
   assert.equal(notImage.status, 415);
+
+  // Uploads from the site carry a small copy for the photo grids.
+  const form = new FormData();
+  form.append('image', new Blob([jpeg], { type: 'image/jpeg' }), 'photo.jpg');
+  form.append('thumb', new Blob([jpeg], { type: 'image/jpeg' }), 'photo-thumb.jpg');
+  const withThumb = await api('POST', '/api/photos?nightId=n3&w=1&h=1', { token: teamTokens.t2, raw: form });
+  assert.equal(withThumb.status, 200, JSON.stringify(withThumb.data));
+  s = await state();
+  assert.equal(s.photos.length, 1);
+  assert.ok(s.photos[0].thumb);
+  assert.notEqual(s.photos[0].thumb, s.photos[0].url);
+  assert.equal((await fetch(base + s.photos[0].thumb)).status, 200);
+  const thumbUrl = s.photos[0].thumb;
+  assert.equal((await api('DELETE', `/api/photos?id=${withThumb.data.photo.id}`, { token: admin })).status, 200);
+  assert.equal((await fetch(base + thumbUrl)).status, 404);
+});
+
+await step('the page asks for every script module up front', async () => {
+  const page = await (await fetch(`${base}/`)).text();
+  const preloads = [...page.matchAll(/<link rel="modulepreload" href="([^"]+)"/g)].map((m) => m[1]);
+  for (const url of ['/js/store.js', '/js/views/home.js', '/js/shared/core.js', '/vendor/preact.mjs']) assert.ok(preloads.includes(url), url);
+  assert.ok(!preloads.includes('/js/main.js'));
+  assert.ok(page.indexOf('rel="modulepreload"') > page.indexOf('type="importmap"'));
+  for (const url of preloads) assert.equal((await fetch(base + url)).status, 200, url);
 });
 
 await step('nightly mode reveals one night at a time', async () => {

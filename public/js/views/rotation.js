@@ -18,18 +18,20 @@ function NightCard({ night, now }) {
         location: night.suburb,
       })
     : null;
+  const day = night.startsAt ? fmt(night.startsAt, zone, { weekday: 'short' }) : '';
+  const date = night.startsAt ? fmt(night.startsAt, zone, { day: 'numeric', month: 'short' }) : '';
+  const time = night.startsAt ? fmtTime(night.startsAt, zone) : '';
   return html`<article class="panel night-card" style=${`border-left:10px solid ${host?.color || 'var(--ink)'}`}>
     <div class="num-col">
       <${FireText} text=${String(night.number)} class="big-num" />
-      <div class="date">
-        ${night.startsAt
-          ? html`${fmt(night.startsAt, zone, { weekday: 'short' })}<br />${fmt(night.startsAt, zone, { day: 'numeric', month: 'short' })}<br />${fmtTime(night.startsAt, zone)}`
-          : 'TBC'}
-      </div>
+      <div class="date">${night.startsAt ? html`${day}<br />${date}<br />${time}` : 'TBC'}</div>
     </div>
-    <div style="min-width:0">
-      <div class="row between wrap" style="margin-bottom:8px">
-        <span class="kicker">Night ${night.number}${night.hostTeamId === mine ? ' · you host' : ''}</span>
+    <div class="nc-body" style="min-width:0">
+      <div class="row between wrap nc-head">
+        <span>
+          <span class="kicker">Night ${night.number}${night.hostTeamId === mine ? ' · you host' : ''}</span>
+          <span class="date date-inline">${night.startsAt ? `${day} ${date} · ${time}` : 'Date TBC'}</span>
+        </span>
         <${NightPill} night=${night} now=${now} />
       </div>
       <${TeamChip} team=${host} size=${42} sub=${`Hosts: ${memberNames(host)}`} />

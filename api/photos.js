@@ -1,5 +1,5 @@
-// GET    /api/photos?id=<id>    -> serves a private or local photo
-// POST   /api/photos?nightId=.. -> upload a food photo (raw image body)
+// GET    /api/photos?id=<id>    -> serves a private or local photo (&size=thumb for the small copy)
+// POST   /api/photos?nightId=.. -> upload a food photo (raw image, or multipart "image" + "thumb")
 // DELETE /api/photos?id=<id>    -> remove a photo (your own, or any as organiser)
 import { handle, json, HttpError, queryParams, bearer, str } from '../lib/http.js';
 import { loadAll, commit, toJson, K, publicPhoto } from '../lib/data.js';
@@ -8,6 +8,32 @@ import { storageKind, pipeline, parseJson } from '../lib/store.js';
 import { photosEnabled, sniffImage, storePhoto, removePhoto, servePhoto, serveLocalFile } from '../lib/photos.js';
 
 const MAX_BYTES = 4 * 1024 * 1024;
+const MAX_THUMB = 400 * 1024;
+
+function checkPhoto(buf, max) {
+  if (!buf.length) throw new HttpError(400, 'empty', 'That photo was empty.');
+  if (buf.length > max) throw new HttpError(413, 'too_large', 'That photo is too big (4 MB max).');
+  const kind = sniffImage(buf);
+  if (!kind) throw new HttpError(415, 'not_image', 'Only JPG, PNG or WebP photos please.');
+  return { buf, kind };
+}
+
+// The photo, plus the small copy for the grids when the phone sends one.
+async function readUpload(request) {
+  if (!(request.headers.get('content-type') || '').startsWith('multipart/form-data')) {
+    return { image: checkPhoto(Buffer.from(await request.arrayBuffer()), MAX_BYTES), thumb: null };
+  }
+  let form;
+  try {
+    form = await request.formData();
+  } catch {
+    throw new HttpError(400, 'bad_upload', 'That upload didn’t come through. Try again.');
+  }
+  const bytes = async (file) => Buffer.from(typeof file?.arrayBuffer === 'function' ? await file.arrayBuffer() : new ArrayBuffer(0));
+  const image = checkPhoto(await bytes(form.get('image')), MAX_BYTES);
+  const thumb = form.get('thumb') ? checkPhoto(await bytes(form.get('thumb')), MAX_THUMB) : null;
+  return { image, thumb };
+}
 
 function who(request, data) {
   const payload = readToken(bearer(request));
@@ -26,8 +52,9 @@ export const GET = handle(async (request) => {
   const [raw] = await pipeline([['HGET', K.photos, id]]);
   const photo = parseJson(raw);
   if (!photo) return new Response('Not found', { status: 404 });
-  if (photo.access === 'public') return Response.redirect(photo.url, 302);
-  return servePhoto(photo);
+  const file = params.get('size') === 'thumb' && photo.thumb ? photo.thumb : photo;
+  if (file.access === 'public') return Response.redirect(file.url, 302);
+  return servePhoto(file);
 });
 
 export const POST = handle(async (request) => {
@@ -39,17 +66,22 @@ export const POST = handle(async (request) => {
   const night = data.config.nights.find((n) => n.id === params.get('nightId'));
   if (!night) throw new HttpError(400, 'no_night', 'Pick which night the photo is from.');
 
-  const buf = Buffer.from(await request.arrayBuffer());
-  if (!buf.length) throw new HttpError(400, 'empty', 'That photo was empty.');
-  if (buf.length > MAX_BYTES) throw new HttpError(413, 'too_large', 'That photo is too big (4 MB max).');
-  const kind = sniffImage(buf);
-  if (!kind) throw new HttpError(415, 'not_image', 'Only JPG, PNG or WebP photos please.');
-
+  const { image, thumb } = await readUpload(request);
   const id = newId('p');
-  const stored = await storePhoto(buf, { pathname: `cdwm/${night.id}/${id}.${kind.ext}`, contentType: kind.type });
+  const stored = await storePhoto(image.buf, { pathname: `cdwm/${night.id}/${id}.${image.kind.ext}`, contentType: image.kind.type });
+  // The small copy is a nice-to-have: if it fails, the grid uses the full photo.
+  let small = null;
+  if (thumb) {
+    try {
+      small = await storePhoto(thumb.buf, { pathname: `cdwm/${night.id}/${id}-thumb.${thumb.kind.ext}`, contentType: thumb.kind.type });
+    } catch (err) {
+      console.error('thumbnail upload failed', err);
+    }
+  }
   const photo = {
     id,
     ...stored,
+    thumb: small,
     nightId: night.id,
     teamId: admin ? null : teamId,
     caption: str(params.get('caption'), 120),

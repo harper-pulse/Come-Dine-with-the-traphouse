@@ -9,6 +9,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { gtaFontFace } from './fonts.mjs';
+import { withModulePreloads } from './preload.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const PUBLIC = path.join(root, 'public');
@@ -87,6 +88,7 @@ function serveStatic(req, res, url) {
   }
   res.writeHead(200, { 'content-type': MIME[path.extname(file)] || 'application/octet-stream', 'cache-control': 'no-cache' });
   if (rel === '/css/app.css') return res.end(gtaFontFace(PUBLIC) + fs.readFileSync(file, 'utf8'));
+  if (rel === '/index.html') return res.end(withModulePreloads(fs.readFileSync(file, 'utf8'), PUBLIC));
   fs.createReadStream(file).pipe(res);
 }
 

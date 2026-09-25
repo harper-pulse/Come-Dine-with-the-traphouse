@@ -3,6 +3,7 @@
 // GET    /api/avatar?id=<key>&h=<hash>              -> a saved portrait image
 // POST   /api/avatar?action=generate&target=<t>     -> photo in, GTA artwork out (not saved yet)
 // POST   /api/avatar?action=save&target=<t>         -> saves the final image as the portrait
+//                                                      (raw image, or multipart "image" + "thumb")
 // DELETE /api/avatar?target=<t>                     -> removes the custom portrait
 //
 // <t> is "team" for the team portrait, or a member id for one player.
@@ -18,6 +19,7 @@ import { aiMode, aiLimit } from '../lib/ai-mode.js';
 
 const MAX_UPLOAD = 4 * 1024 * 1024;
 const MAX_SAVE = 700 * 1024;
+const MAX_THUMB = 120 * 1024;
 
 async function context(request) {
   if (storageKind() === 'none') throw new HttpError(503, 'storage_missing', 'No database connected yet.');
@@ -43,8 +45,7 @@ async function context(request) {
   return { data, params, teamId, profile, target, admin };
 }
 
-async function readImage(request, max) {
-  const buf = Buffer.from(await request.arrayBuffer());
+function checkImage(buf, max) {
   if (!buf.length) throw new HttpError(400, 'empty', 'That photo was empty.');
   if (buf.length > max) throw new HttpError(413, 'too_large', 'That image is too big.');
   const kind = sniffImage(buf);
@@ -52,7 +53,36 @@ async function readImage(request, max) {
   return { buf, kind };
 }
 
+async function readImage(request, max) {
+  return checkImage(Buffer.from(await request.arrayBuffer()), max);
+}
+
+// The portrait, plus the small copy for badges when the phone sends one.
+async function readPortrait(request) {
+  if (!(request.headers.get('content-type') || '').startsWith('multipart/form-data')) {
+    return { image: await readImage(request, MAX_SAVE), thumb: null };
+  }
+  let form;
+  try {
+    form = await request.formData();
+  } catch {
+    throw new HttpError(400, 'bad_upload', 'That upload didn’t come through. Try again.');
+  }
+  const bytes = async (file) => Buffer.from(typeof file?.arrayBuffer === 'function' ? await file.arrayBuffer() : new ArrayBuffer(0));
+  const image = checkImage(await bytes(form.get('image')), MAX_SAVE);
+  const thumb = form.get('thumb') ? checkImage(await bytes(form.get('thumb')), MAX_THUMB) : null;
+  return { image, thumb };
+}
+
 const storageKey = (teamId, target) => (target === 'team' ? `team:${teamId}` : `member:${target}`);
+
+function stored({ buf, kind }, key) {
+  const hash = crypto.createHash('sha256').update(buf).digest('hex').slice(0, 12);
+  return {
+    url: `/api/avatar?id=${encodeURIComponent(key)}&h=${hash}`,
+    json: toJson({ mediaType: kind.type, data: buf.toString('base64'), hash }),
+  };
+}
 
 export const GET = handle(async (request) => {
   const id = queryParams(request).get('id');
@@ -101,23 +131,26 @@ export const POST = handle(async (request) => {
   }
 
   if (action === 'save') {
-    const { buf, kind } = await readImage(request, MAX_SAVE);
+    const upload = await readPortrait(request);
     const key = storageKey(ctx.teamId, ctx.target);
-    const hash = crypto.createHash('sha256').update(buf).digest('hex').slice(0, 12);
-    const url = `/api/avatar?id=${encodeURIComponent(key)}&h=${hash}`;
+    const image = stored(upload.image, key);
+    const thumb = upload.thumb ? stored(upload.thumb, `${key}:thumb`) : null;
     const profile = { ...ctx.profile, members: (ctx.profile.members || []).map((m) => ({ ...m })) };
     if (ctx.target === 'team') {
-      profile.portrait = { url, updatedAt: new Date().toISOString() };
+      profile.portrait = { url: image.url, thumb: thumb?.url || '', updatedAt: new Date().toISOString() };
     } else {
       const m = profile.members.find((x) => x.id === ctx.target);
-      m.avatarUrl = url;
+      m.avatarUrl = image.url;
+      m.avatarThumb = thumb?.url || '';
       m.avatar = 'custom';
     }
     const v = await commit([
-      ['HSET', K.avatars, key, toJson({ mediaType: kind.type, data: buf.toString('base64'), hash })],
+      ['HSET', K.avatars, key, image.json],
+      // No thumb sent: drop the old one so it can't show the previous portrait.
+      thumb ? ['HSET', K.avatars, `${key}:thumb`, thumb.json] : ['HDEL', K.avatars, `${key}:thumb`],
       ['HSET', K.profiles, ctx.teamId, toJson(profile)],
     ]);
-    return json({ ok: true, v, url });
+    return json({ ok: true, v, url: image.url, thumb: thumb?.url || '' });
   }
 
   throw new HttpError(400, 'bad_action', 'Unknown action.');
@@ -131,10 +164,12 @@ export const DELETE = handle(async (request) => {
   } else {
     const m = profile.members.find((x) => x.id === ctx.target);
     delete m.avatarUrl;
+    delete m.avatarThumb;
     if (m.avatar === 'custom') m.avatar = '';
   }
+  const key = storageKey(ctx.teamId, ctx.target);
   const v = await commit([
-    ['HDEL', K.avatars, storageKey(ctx.teamId, ctx.target)],
+    ['HDEL', K.avatars, key, `${key}:thumb`],
     ['HSET', K.profiles, ctx.teamId, toJson(profile)],
   ]);
   return json({ ok: true, v });

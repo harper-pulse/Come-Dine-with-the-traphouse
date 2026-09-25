@@ -3,7 +3,7 @@ import { html, render, useEffect, useState } from './lib.js';
 import { useApp, refresh, myTeam, myCard } from './store.js';
 import { useRoute } from './router.js';
 import { useFx, sound } from './fx.js';
-import { FireText, Avatar, Icon, Sheet, Toasts, OverlayLayer } from './components.js';
+import { FireText, TeamFace, Icon, Sheet, Toasts, OverlayLayer } from './components.js';
 import { nightStatus } from './shared/core.js';
 import { HomeView } from './views/home.js';
 import { RotationView } from './views/rotation.js';
@@ -54,7 +54,7 @@ function Header({ route }) {
       <div class="who">
         ${team
           ? html`<a class="who-chip" href="#/me" aria-label=${`Logged in as ${team.name}`}>
-              <${Avatar} member=${team.members[0]} team=${team} size=${28} /><span>${team.name}</span></a>`
+              <${TeamFace} team=${team} size=${28} /><span>${team.name}</span></a>`
           : a.state?.setup && html`<a class="btn sm" href="#/me">Team login</a>`}
       </div>
     </div>
