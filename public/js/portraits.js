@@ -1,10 +1,11 @@
-// GTA portraits: upload a photo, the AI artist (or the free comic filter)
-// redraws it in the poster's style, preview it, keep it.
+// GTA portraits: upload a photo, Nano Banana (Google's image AI, the one the
+// poster was made with) redraws it in the poster's style, preview it, keep
+// it. A finished portrait made elsewhere (e.g. the Gemini app) can be used as is.
 import { html, useState, useEffect, useRef } from './lib.js';
 import { app, syncTo, loadTeam, loadAdmin, emit } from './store.js';
 import { FireText, Sheet, Icon, Avatar } from './components.js';
 import { celebrate, toast, sound } from './fx.js';
-import { gtaFilter, finalAvatar } from './gta-filter.js';
+import { finalAvatar } from './imaging.js';
 import { compressImage } from './util.js';
 
 const TIPS = [
@@ -66,7 +67,7 @@ function LoadingScreen({ tipIndex, progress }) {
 // The sheet that turns one photo into a portrait.
 function Studio({ open, onClose, target, label, kind, teamId, ai, photo }) {
   const [step, setStep] = useState('choose');
-  const [result, setResult] = useState(null); // { blob, url, method }
+  const [result, setResult] = useState(null); // { blob, url, method: 'ai' | 'upload' }
   const [error, setError] = useState('');
   const [left, setLeft] = useState(ai?.left ?? null);
   const [tip, setTip] = useState(0);
@@ -90,7 +91,7 @@ function Studio({ open, onClose, target, label, kind, teamId, ai, photo }) {
     const started = Date.now();
     const t = setInterval(() => {
       const s = (Date.now() - started) / 1000;
-      setProgress(Math.min(96, 100 * (1 - Math.exp(-s / 14))));
+      setProgress(Math.min(96, 100 * (1 - Math.exp(-s / 20))));
       if (Math.round(s) % 5 === 0) setTip((i) => i + 1);
     }, 1000);
     return () => clearInterval(t);
@@ -117,24 +118,17 @@ function Studio({ open, onClose, target, label, kind, teamId, ai, photo }) {
     }
   };
 
-  const useFilter = async () => {
+  // For portraits already made elsewhere, like the Gemini app.
+  const useAsIs = () => {
     setError('');
-    setStep('filtering');
-    try {
-      const blob = await gtaFilter(photo, 640);
-      setResult({ blob, url: URL.createObjectURL(blob), method: 'filter' });
-      setStep('result');
-      sound.play('pop');
-    } catch {
-      setError('Could not read that photo. Try another one.');
-      setStep('choose');
-    }
+    setResult({ blob: photo, url: photoUrl, method: 'upload' });
+    setStep('result');
   };
 
   const keep = async () => {
     setStep('saving');
     try {
-      const final = await finalAvatar(result.blob, 640);
+      const final = await finalAvatar(result.blob);
       const res = await avatarFetch('POST', { action: 'save', target }, { teamId, body: final });
       const { v } = await res.json();
       await refreshAfter(v, teamId);
@@ -157,22 +151,25 @@ function Studio({ open, onClose, target, label, kind, teamId, ai, photo }) {
       </div>
 
       ${step === 'working' && html`<${LoadingScreen} tipIndex=${tip} progress=${progress} />
-        <p class="small muted center">The AI artist is drawing ${kind === 'duo' ? 'you both' : label}. Usually 10 to 40 seconds.</p>`}
+        <p class="small muted center">Nano Banana is drawing ${kind === 'duo' ? 'you both' : label}. Usually 20 to 60 seconds.</p>`}
 
-      ${(step === 'choose' || step === 'filtering') && html`
+      ${step === 'choose' && html`
         <div class="studio-compare">
           <figure class="studio-frame"><img src=${photoUrl} alt="Your photo" /><figcaption>Your photo</figcaption></figure>
         </div>
         ${error && html`<p class="error-text" role="alert">${error}</p>`}
         ${aiOn
-          ? html`<button class="btn lg block" disabled=${noGoes || step === 'filtering'} onClick=${useAi}>
-              🎨 Make ${kind === 'duo' ? 'us' : 'me'} GTA
+          ? html`<button class="btn lg block" disabled=${noGoes} onClick=${useAi}>
+              🍌 Make ${kind === 'duo' ? 'us' : 'me'} GTA
             </button>
-            <p class="hint center">${teamId ? 'Organiser goes are unlimited.' : noGoes ? 'Your team has used all its AI goes.' : `The AI artist redraws the photo in the poster's style. ${left} AI ${left === 1 ? 'go' : 'goes'} left for your team.`}</p>`
-          : html`<p class="hint">AI portraits aren't switched on for this portal, so you get the quick comic filter.</p>`}
-        <button class=${`btn block ${aiOn ? 'dark' : 'lg'}`} disabled=${step === 'filtering'} onClick=${useFilter}>
-          ${step === 'filtering' ? 'Inking…' : '⚡ Quick comic filter (free)'}
-        </button>`}
+            <p class="hint center">${teamId
+              ? 'Nano Banana redraws the photo in the poster’s style. Organiser goes are unlimited.'
+              : noGoes
+                ? 'Your team has used all its AI goes. Ask the organiser for more.'
+                : `Nano Banana redraws the photo in the poster’s style. ${left} AI ${left === 1 ? 'go' : 'goes'} left for your team.`}</p>`
+          : html`<p class="hint">AI portraits aren’t switched on for this portal yet. If this is already a finished portrait (say, one made in the Gemini app), you can use it as is.</p>`}
+        ${aiOn && html`<p class="hint center" style="margin-bottom:-6px">Already made it yourself in the Gemini app?</p>`}
+        <button class=${`btn block ${aiOn ? 'dark' : 'lg'}`} onClick=${useAsIs}>Use as is</button>`}
 
       ${(step === 'result' || step === 'saving') && result && html`
         <div class="studio-result">
@@ -181,8 +178,7 @@ function Studio({ open, onClose, target, label, kind, teamId, ai, photo }) {
         ${error && html`<p class="error-text" role="alert">${error}</p>`}
         <button class="btn lg block" disabled=${step === 'saving'} onClick=${keep}>${step === 'saving' ? 'Saving…' : '✅ Keep it'}</button>
         <div class="row wrap" style="justify-content:center">
-          ${aiOn && html`<button class="btn sm dark" disabled=${step === 'saving' || noGoes} onClick=${useAi}>${result.method === 'ai' ? 'Redraw (uses a go)' : '🎨 Try the AI'}</button>`}
-          ${result.method === 'ai' && html`<button class="btn sm dark" disabled=${step === 'saving'} onClick=${useFilter}>Use comic filter</button>`}
+          ${aiOn && html`<button class="btn sm dark" disabled=${step === 'saving' || noGoes} onClick=${useAi}>${result.method === 'ai' ? '🍌 Redraw (uses a go)' : '🍌 Make it GTA instead'}</button>`}
           <button class="btn sm ghost" disabled=${step === 'saving'} onClick=${onClose}>Cancel</button>
         </div>`}
     </div>
@@ -239,9 +235,9 @@ export function PortraitsSection({ team, ai, teamId }) {
       <div class="panel-title" style="margin-bottom:4px">GTA portraits</div>
       <p class="small muted">
         ${aiOn
-          ? 'Upload a photo and the AI artist redraws it in the poster’s GTA style. Do one of you both for the team, and one each for your player icons.'
-          : 'Upload a photo and it gets the comic treatment. Do one of you both for the team, and one each for your player icons.'}${' '}
-        Photos are only used to draw the portrait and are never stored.
+          ? 'Upload a photo and Nano Banana (Google’s image AI, the one the poster was made with) redraws it in the poster’s GTA style. Do one of you both for the team, and one each for your player icons.'
+          : 'Upload a finished GTA-style portrait (for example one made in the Gemini app): one of you both for the team, and one each for your player icons.'}${' '}
+        ${aiOn ? 'Made one yourself in Gemini? Upload it and pick “Use as is”. ' : ''}Original photos are never stored.
       </p>
     </div>
     <div class="portrait-grid">

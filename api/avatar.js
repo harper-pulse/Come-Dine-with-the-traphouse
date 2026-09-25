@@ -17,7 +17,7 @@ import { sniffImage } from '../lib/photos.js';
 import { aiMode, aiLimit } from '../lib/ai-mode.js';
 
 const MAX_UPLOAD = 4 * 1024 * 1024;
-const MAX_SAVE = 450 * 1024;
+const MAX_SAVE = 700 * 1024;
 
 async function context(request) {
   if (storageKind() === 'none') throw new HttpError(503, 'storage_missing', 'No database connected yet.');
@@ -74,11 +74,11 @@ export const POST = handle(async (request) => {
 
   if (action === 'generate') {
     const mode = aiMode();
-    if (mode === 'off') throw new HttpError(409, 'ai_off', 'AI portraits are switched off here. Use the free comic filter instead.');
+    if (mode === 'off') throw new HttpError(409, 'ai_off', 'AI portraits aren’t switched on here. You can still upload a finished portrait and use it as is.');
     const limit = aiLimit();
     const used = Number(ctx.data.avatarUsage?.[ctx.teamId] || 0);
     if (!ctx.admin && used >= limit) {
-      throw new HttpError(429, 'no_goes', `Your team has used all ${limit} AI goes. Use the free comic filter, or ask the organiser for more.`);
+      throw new HttpError(429, 'no_goes', `Your team has used all ${limit} AI goes. Ask the organiser for more.`);
     }
     const { buf, kind } = await readImage(request, MAX_UPLOAD);
     // Count the go up front so rapid taps can't dodge the cap; refunded on failure.
@@ -91,6 +91,7 @@ export const POST = handle(async (request) => {
           'content-type': art.mediaType || 'image/png',
           'cache-control': 'no-store',
           'x-ai-goes-left': String(Math.max(0, limit - Number(count))),
+          'x-ai-model': art.model || '',
         },
       });
     } catch (err) {
