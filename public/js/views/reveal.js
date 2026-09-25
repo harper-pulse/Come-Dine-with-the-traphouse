@@ -3,7 +3,7 @@
 import { html, useEffect, useState, useCallback, useRef } from '../lib.js';
 import { useApp, app, teamById, adminAction, emit, refresh } from '../store.js';
 import { go } from '../router.js';
-import { FireText, AvatarPair, Avatar, Stars, TeamDot, Icon, useNow, awardWho } from '../components.js';
+import { FireText, AvatarPair, TeamBadge, TeamPortrait, Avatar, Stars, TeamDot, Icon, useNow, awardWho } from '../components.js';
 import { celebrate, confetti, sound, toast } from '../fx.js';
 import { scoreLabel } from '../shared/core.js';
 import { num, ordinal, plural } from '../util.js';
@@ -66,7 +66,7 @@ function TeamStep({ step }) {
   return html`<div class="stack-lg">
     <div class="center stack">
       <${FireText} text=${`${ordinal(step.place)} place`} tone=${step.last ? 'blood' : ''} class="reveal-place" />
-      <div class="row" style="justify-content:center"><${AvatarPair} team=${team} size=${84} /></div>
+      <div class="row" style="justify-content:center">${team?.portrait ? html`<${TeamPortrait} team=${team} size=${280} />` : html`<${AvatarPair} team=${team} size=${84} />`}</div>
       <${FireText} text=${team?.name || ''} tone="cream" class="reveal-mid" />
       <p class="muted">Night ${step.nightNumbers.join(' & ')}${nights[0]?.theme ? ` · ${nights[0].theme}` : ''}</p>
     </div>
@@ -109,7 +109,9 @@ function Winner({ step }) {
       return html`<div class="stack-lg" key=${w.teamId}>
         <div class="panel tone-orange halftone has-flames center stack">
           <span class="crown" style="font-size:3rem" aria-hidden="true">👑</span>
-          <div class="row" style="justify-content:center">${team?.members.map((m) => html`<${Avatar} key=${m.id} member=${m} team=${team} size=${110} />`)}</div>
+          <div class="row" style="justify-content:center">${team?.portrait
+            ? html`<${TeamPortrait} team=${team} size=${340} />`
+            : team?.members.map((m) => html`<${Avatar} key=${m.id} member=${m} team=${team} size=${110} />`)}</div>
           <${FireText} text=${team?.name || ''} tone="cream" class="reveal-mid" />
           <p class="hud" style="font-size:1.4rem">Average ${num(w.avg)} · ${w.total}/${w.count * 10}</p>
           ${a.state.event.prize && html`<p style="font-weight:700">Winners of ${a.state.event.prize.toLowerCase()}</p>`}
@@ -148,7 +150,7 @@ function Final({ step }) {
         return html`<div class="panel tight reveal-card" key=${r.teamId} style=${`animation-delay:${0.2 + i * 0.25}s;${r.place === 1 ? 'border-color:var(--flame-2)' : ''}`}>
           <div class="row">
             <${FireText} text=${r.place ? String(r.place) : '-'} style="font-size:2.4rem;width:48px;text-align:center" />
-            <${AvatarPair} team=${t} size=${40} />
+            <${TeamBadge} team=${t} size=${40} />
             <strong class="display" style="font-size:1.3rem;flex:1;min-width:0">${t?.name}</strong>
             <span class="display" style="font-size:1.5rem;color:var(--flame-1)">${r.count ? num(r.avg) : '-'}</span>
           </div>

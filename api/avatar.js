@@ -1,0 +1,140 @@
+// GTA portraits.
+//
+// GET    /api/avatar?id=<key>&h=<hash>              -> a saved portrait image
+// POST   /api/avatar?action=generate&target=<t>     -> photo in, GTA artwork out (not saved yet)
+// POST   /api/avatar?action=save&target=<t>         -> saves the final image as the portrait
+// DELETE /api/avatar?target=<t>                     -> removes the custom portrait
+//
+// <t> is "team" for the team portrait, or a member id for one player.
+// Teams use their own login. The organiser can act for any team by adding
+// &teamId=<id> with the organiser login.
+import crypto from 'node:crypto';
+import { handle, json, HttpError, queryParams, bearer } from '../lib/http.js';
+import { loadAll, commit, toJson, K } from '../lib/data.js';
+import { readToken, requireAdmin, requireTeam } from '../lib/auth.js';
+import { pipeline, parseJson, storageKind } from '../lib/store.js';
+import { sniffImage } from '../lib/photos.js';
+import { aiMode, aiLimit } from '../lib/ai-mode.js';
+
+const MAX_UPLOAD = 4 * 1024 * 1024;
+const MAX_SAVE = 450 * 1024;
+
+async function context(request) {
+  if (storageKind() === 'none') throw new HttpError(503, 'storage_missing', 'No database connected yet.');
+  const data = await loadAll();
+  if (!data.config) throw new HttpError(409, 'not_setup', 'The portal has not been set up yet.');
+  const params = queryParams(request);
+  const payload = readToken(bearer(request));
+  let teamId;
+  let admin = false;
+  if (payload?.r === 'admin') {
+    requireAdmin(request, data.secrets);
+    admin = true;
+    teamId = params.get('teamId');
+  } else {
+    teamId = requireTeam(request, data.secrets);
+  }
+  if (!data.config.teams.some((t) => t.id === teamId)) throw new HttpError(404, 'no_team', 'No such team.');
+  const profile = data.profiles[teamId] || { members: [] };
+  const target = params.get('target') || 'team';
+  if (target !== 'team' && !(profile.members || []).some((m) => m.id === target)) {
+    throw new HttpError(400, 'bad_target', 'That player is not on this team.');
+  }
+  return { data, params, teamId, profile, target, admin };
+}
+
+async function readImage(request, max) {
+  const buf = Buffer.from(await request.arrayBuffer());
+  if (!buf.length) throw new HttpError(400, 'empty', 'That photo was empty.');
+  if (buf.length > max) throw new HttpError(413, 'too_large', 'That image is too big.');
+  const kind = sniffImage(buf);
+  if (!kind) throw new HttpError(415, 'not_image', 'Only JPG, PNG or WebP images please.');
+  return { buf, kind };
+}
+
+const storageKey = (teamId, target) => (target === 'team' ? `team:${teamId}` : `member:${target}`);
+
+export const GET = handle(async (request) => {
+  const id = queryParams(request).get('id');
+  if (!id) throw new HttpError(400, 'no_id', 'Which portrait?');
+  const [raw] = await pipeline([['HGET', K.avatars, id]]);
+  const stored = parseJson(raw);
+  if (!stored?.data) return new Response('Not found', { status: 404 });
+  return new Response(Buffer.from(stored.data, 'base64'), {
+    headers: {
+      'content-type': stored.mediaType || 'image/jpeg',
+      'cache-control': 'public, max-age=31536000, s-maxage=31536000, immutable',
+    },
+  });
+});
+
+export const POST = handle(async (request) => {
+  const ctx = await context(request);
+  const action = ctx.params.get('action');
+
+  if (action === 'generate') {
+    const mode = aiMode();
+    if (mode === 'off') throw new HttpError(409, 'ai_off', 'AI portraits are switched off here. Use the free comic filter instead.');
+    const limit = aiLimit();
+    const used = Number(ctx.data.avatarUsage?.[ctx.teamId] || 0);
+    if (!ctx.admin && used >= limit) {
+      throw new HttpError(429, 'no_goes', `Your team has used all ${limit} AI goes. Use the free comic filter, or ask the organiser for more.`);
+    }
+    const { buf, kind } = await readImage(request, MAX_UPLOAD);
+    // Count the go up front so rapid taps can't dodge the cap; refunded on failure.
+    const [count] = await pipeline([['HINCRBY', K.avatarUsage, ctx.teamId, 1]]);
+    const { gtaify } = await import('../lib/gta-art.js');
+    try {
+      const art = await gtaify({ photo: buf, mediaType: kind.type, kind: ctx.target === 'team' ? 'duo' : 'solo' });
+      return new Response(art.data, {
+        headers: {
+          'content-type': art.mediaType || 'image/png',
+          'cache-control': 'no-store',
+          'x-ai-goes-left': String(Math.max(0, limit - Number(count))),
+        },
+      });
+    } catch (err) {
+      await pipeline([['HINCRBY', K.avatarUsage, ctx.teamId, -1]]);
+      throw new HttpError(502, 'ai_failed', err.friendly || 'The AI could not draw that one. Try again.');
+    }
+  }
+
+  if (action === 'save') {
+    const { buf, kind } = await readImage(request, MAX_SAVE);
+    const key = storageKey(ctx.teamId, ctx.target);
+    const hash = crypto.createHash('sha256').update(buf).digest('hex').slice(0, 12);
+    const url = `/api/avatar?id=${encodeURIComponent(key)}&h=${hash}`;
+    const profile = { ...ctx.profile, members: (ctx.profile.members || []).map((m) => ({ ...m })) };
+    if (ctx.target === 'team') {
+      profile.portrait = { url, updatedAt: new Date().toISOString() };
+    } else {
+      const m = profile.members.find((x) => x.id === ctx.target);
+      m.avatarUrl = url;
+      m.avatar = 'custom';
+    }
+    const v = await commit([
+      ['HSET', K.avatars, key, toJson({ mediaType: kind.type, data: buf.toString('base64'), hash })],
+      ['HSET', K.profiles, ctx.teamId, toJson(profile)],
+    ]);
+    return json({ ok: true, v, url });
+  }
+
+  throw new HttpError(400, 'bad_action', 'Unknown action.');
+});
+
+export const DELETE = handle(async (request) => {
+  const ctx = await context(request);
+  const profile = { ...ctx.profile, members: (ctx.profile.members || []).map((m) => ({ ...m })) };
+  if (ctx.target === 'team') {
+    delete profile.portrait;
+  } else {
+    const m = profile.members.find((x) => x.id === ctx.target);
+    delete m.avatarUrl;
+    if (m.avatar === 'custom') m.avatar = '';
+  }
+  const v = await commit([
+    ['HDEL', K.avatars, storageKey(ctx.teamId, ctx.target)],
+    ['HSET', K.profiles, ctx.teamId, toJson(profile)],
+  ]);
+  return json({ ok: true, v });
+});

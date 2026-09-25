@@ -1,6 +1,6 @@
 import { html, useState } from '../lib.js';
 import { useApp, teamById } from '../store.js';
-import { FireText, PageTitle, Avatar, AvatarPair, Progress, Stars, TeamDot, Dots, awardWho } from '../components.js';
+import { FireText, PageTitle, Avatar, TeamBadge, TeamPortrait, Progress, Stars, TeamDot, Dots, awardWho } from '../components.js';
 import { num, ordinal } from '../util.js';
 
 function Sealed() {
@@ -46,7 +46,7 @@ function Podium({ ranking }) {
       const t = teamById(r.teamId);
       return html`<div class=${`spot ${cls[i]}`} key=${r.teamId}>
         ${cls[i] === 'p1' && html`<span class="crown" aria-hidden="true">👑</span>`}
-        <${AvatarPair} team=${t} size=${cls[i] === 'p1' ? 52 : 40} />
+        <${TeamBadge} team=${t} size=${cls[i] === 'p1' ? 52 : 40} />
         <div class="name">${t?.name}</div>
         <div class="block">
           <span class="place">${r.place}</span>
@@ -140,7 +140,7 @@ export function BoardView() {
     ${winner && html`<section class="panel tone-orange halftone has-flames center">
       <div class="kicker" style="color:#fff">Champions</div>
       <${FireText} tag="h2" text=${winner.name} tone="cream" style="font-size:clamp(2.4rem,11vw,4rem);margin:6px 0" />
-      <div class="row" style="justify-content:center"><${AvatarPair} team=${winner} size=${64} /></div>
+      <div class="row" style="justify-content:center">${winner.portrait ? html`<${TeamPortrait} team=${winner} size=${260} />` : html`<${TeamBadge} team=${winner} size=${64} />`}</div>
       <p style="margin-top:10px;font-weight:600">${s.event.prize ? `Winners of ${s.event.prize.toLowerCase()}` : ''}</p>
       <div class="flames" aria-hidden="true"></div>
     </section>`}

@@ -1,7 +1,7 @@
 import { html, useState, useEffect } from '../lib.js';
 import { useApp, teamById, nightById, tz, myTeamId, myCard, teamAction } from '../store.js';
 import { go } from '../router.js';
-import { FireText, PageTitle, TeamLogin, Stars, Sheet, Countdown, AvatarPair, NightPill, useNow } from '../components.js';
+import { FireText, PageTitle, TeamLogin, Stars, Sheet, Countdown, TeamBadge, NightPill, useNow } from '../components.js';
 import { celebrate, sound, toast } from '../fx.js';
 import { nightStatus, scoreLabel, COMMENT_MAX } from '../shared/core.js';
 import { fmtDay, fmtTime, memberNames } from '../util.js';
@@ -109,7 +109,7 @@ function Scorecard({ nightId }) {
     <header class="stack" style="--gap:6px">
       <div class="kicker">Night ${night.number} scorecard</div>
       <div class="row">
-        <${AvatarPair} team=${host} size=${50} />
+        <${TeamBadge} team=${host} size=${50} />
         <${FireText} tag="h1" text=${host?.name || ''} style="font-size:clamp(2rem,9vw,2.8rem)" />
       </div>
       ${night.theme && html`<p class="muted">🎭 ${night.theme}</p>`}
@@ -118,7 +118,7 @@ function Scorecard({ nightId }) {
   if (night.hostTeamId === mine) {
     return html`<div class="page narrow stack-lg">${header}
       <div class="panel center stack">
-        <${FireText} text="BUSTED" tone="blood" style="font-size:3rem" />
+        <${FireText} text="busted" style="font-size:3rem" />
         <p>This is your own dinner. You can't score it. Nice try though.</p>
       </div>
     </div>`;

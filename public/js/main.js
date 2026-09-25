@@ -44,7 +44,7 @@ function Header({ route }) {
         <img class="brand-mark" src="/icons/favicon-64.png" alt="" width="40" height="40" />
         <span class="brand-words">
           <span class="brand-small">Come dine with the</span>
-          <${FireText} text="Traphouse" class="brand-big" />
+          <${FireText} text="Traphouse" tone="flame" class="brand-big" />
         </span>
       </a>
       <nav class="desk-nav" aria-label="Main">

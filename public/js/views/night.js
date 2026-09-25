@@ -2,7 +2,7 @@ import { html } from '../lib.js';
 import { useApp, teamById, nightById, tz, myTeamId, myCard, addressOf } from '../store.js';
 import {
   FireText,
-  AvatarPair,
+  TeamBadge,
   NightPill,
   Countdown,
   Stars,
@@ -64,7 +64,7 @@ function Guests({ night, status }) {
         const done = night.submitted.includes(id);
         return html`<div class="row between" key=${id}>
           <span class="row" style="min-width:0">
-            <${AvatarPair} team=${t} size=${34} />
+            <${TeamBadge} team=${t} size=${34} />
             <span style="min-width:0"><strong>${t?.name}</strong><br /><span class="small muted">${memberNames(t)}</span></span>
           </span>
           ${status !== 'upcoming' && (done ? html`<span class="pill ok">Scored</span>` : html`<span class="pill">Waiting</span>`)}
@@ -156,7 +156,7 @@ export function NightView({ id }) {
       </div>
       <${FireText} tag="h1" text=${host?.name || 'TBC'} tone="cream" style="font-size:clamp(2.2rem,10vw,3.4rem);margin:10px 0 8px" />
       <div class="row" style="margin-bottom:14px">
-        <${AvatarPair} team=${host} size=${52} />
+        <${TeamBadge} team=${host} size=${52} />
         <span style="font-weight:600">${memberNames(host)}</span>
       </div>
       <dl class="kv" style="margin-bottom:14px">

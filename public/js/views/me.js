@@ -1,13 +1,17 @@
 // My team: profile, avatars, dietary needs, and the hosting editor.
 import { html, useState, useEffect } from '../lib.js';
 import { useApp, teamById, hostNightOf, tz, myTeamId, teamAction, logoutTeam } from '../store.js';
-import { FireText, PageTitle, TeamLogin, Avatar, AvatarPair, Icon } from '../components.js';
+import { FireText, PageTitle, TeamLogin, Avatar, TeamBadge, Icon } from '../components.js';
+import { PortraitsSection } from '../portraits.js';
 import { toast, sound } from '../fx.js';
 import { AVATARS } from '../shared/core.js';
 import { fmtDayLong, fmtTime } from '../util.js';
 
 export function AvatarPicker({ value, onChange, team, member }) {
   return html`<div class="avatar-picker" role="radiogroup" aria-label="Pick a character">
+    ${member?.avatarUrl && html`<button type="button" aria-pressed=${value === 'custom'} role="radio" aria-checked=${value === 'custom'} onClick=${() => onChange('custom')} title="Your GTA portrait">
+      <${Avatar} member=${{ ...member, avatar: 'custom' }} team=${team} size=${46} />
+    </button>`}
     <button type="button" aria-pressed=${!value} role="radio" aria-checked=${!value} onClick=${() => onChange('')} title="Initials">
       <${Avatar} member=${{ ...member, avatar: '' }} team=${team} size=${46} />
     </button>
@@ -26,6 +30,15 @@ export function ProfileForm({ team, onSave, saving, includeDietary = true }) {
     setMotto(team.motto || '');
     setMembers(team.members.map((m) => ({ ...m })));
   }, [team.id]);
+  // A new GTA portrait changes avatars behind the form's back: pick those up
+  // without losing any unsaved typing.
+  const avatarKey = team.members.map((m) => `${m.avatar}|${m.avatarUrl}`).join(',');
+  useEffect(() => {
+    setMembers((current) => current.map((m) => {
+      const fresh = team.members.find((x) => x.id === m.id);
+      return fresh ? { ...m, avatar: fresh.avatar, avatarUrl: fresh.avatarUrl } : m;
+    }));
+  }, [avatarKey]);
   const setMember = (id, patch) => setMembers(members.map((m) => (m.id === id ? { ...m, ...patch } : m)));
   return html`<form class="stack" onSubmit=${(e) => {
     e.preventDefault();
@@ -127,10 +140,12 @@ export function MeView() {
     <header class="stack">
       <div class="kicker">My team</div>
       <div class="row">
-        <${AvatarPair} team=${publicTeam} size=${58} />
+        <${TeamBadge} team=${publicTeam} size=${58} />
         <${FireText} tag="h1" text=${team.name} style="font-size:clamp(2rem,9vw,2.8rem)" />
       </div>
     </header>
+
+    <${PortraitsSection} team=${team} ai=${a.team.ai} />
 
     ${hosting &&
     html`<section class="panel tone-orange halftone stack">

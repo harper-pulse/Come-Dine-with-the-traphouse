@@ -30,14 +30,15 @@ export function closeOverlay() {
   emitFx();
 }
 
-// kind: 'passed' | 'wasted'
-export function celebrate(kind, { title, sub, money = false, ms = 2800 } = {}) {
+// kind: 'passed' | 'wasted'. Like GTA: the screen drains to black and white
+// behind the message. Confetti only when asked for (the Grand Reveal winner).
+export function celebrate(kind, { title, sub, money = false, party = false, ms = 2800 } = {}) {
   const id = Date.now();
   fx.overlay = { id, kind, title, sub };
   emitFx();
   if (kind === 'passed') {
     sound.play('passed');
-    confetti({ money });
+    if (party || money) confetti({ money });
   } else if (kind === 'wasted') {
     sound.play('wasted');
   }

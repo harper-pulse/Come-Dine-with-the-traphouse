@@ -16,6 +16,7 @@ import {
 } from '../lib/data.js';
 import { requireAdmin, adminToken, hashPin, newTeamCode, envAdminPin, newId } from '../lib/auth.js';
 import { storageKind } from '../lib/store.js';
+import { aiMode, aiLimit } from '../lib/ai-mode.js';
 import { photosEnabled, removePhoto } from '../lib/photos.js';
 import {
   AVATARS,
@@ -64,6 +65,7 @@ function adminView(data, { spoilers }) {
       show: { status: show.status || 'idle', step: show.step || 0, total: show.script?.length || 0, startedAt: show.startedAt || null },
     },
     photos: Object.values(data.photos || {}).map(publicPhoto),
+    ai: { mode: aiMode(), limit: aiLimit(), used: data.avatarUsage || {} },
   };
 }
 
@@ -264,6 +266,12 @@ export const POST = handle(async (request) => {
       break;
     }
 
+    case 'resetAiGoes': {
+      if (!config.teams.some((t) => t.id === body.teamId)) throw new HttpError(404, 'no_team', 'No such team.');
+      commands.push(['HDEL', K.avatarUsage, body.teamId]);
+      break;
+    }
+
     case 'deleteCard': {
       const key = cardKey(body.nightId, body.teamId);
       if (!data.cards[key]) throw new HttpError(404, 'no_card', 'That scorecard does not exist.');
@@ -308,7 +316,7 @@ export const POST = handle(async (request) => {
         }
       }
       const secrets = { ...data.secrets, teamCodes: {} };
-      commands.push(['DEL', K.config, K.reveal, K.profiles, K.hostinfo, K.cards, K.photos], ['SET', K.secrets, toJson(secrets)]);
+      commands.push(['DEL', K.config, K.reveal, K.profiles, K.hostinfo, K.cards, K.photos, K.avatars, K.avatarUsage], ['SET', K.secrets, toJson(secrets)]);
       break;
     }
 

@@ -3,7 +3,7 @@ import { useApp, teamById, myTeamId, myCard, hostNightOf, tz } from '../store.js
 import {
   FireText,
   TeamChip,
-  AvatarPair,
+  TeamBadge,
   NightPill,
   Countdown,
   Progress,
@@ -39,7 +39,7 @@ function Hero({ s }) {
       <div class="hero-title" aria-hidden="true">
         <div><${FireText} text="come dine" tone="cream" /></div>
         <div><${FireText} text="with the" tone="sky" /></div>
-        <div><${FireText} text="traphouse" /></div>
+        <div><${FireText} text="traphouse" tone="flame" /></div>
       </div>
       <p class="lede" style="font-size:1.15rem;color:var(--text)">${s.event.tagline}</p>
       ${s.event.prize && html`<p><span class="pill paper">🏆 Prize</span> <strong>${s.event.prize}</strong></p>`}
@@ -113,7 +113,7 @@ function YourTeam({ now }) {
   return html`<section class="panel">
     <div class="row between wrap">
       <div class="row">
-        <${AvatarPair} team=${team} size=${46} />
+        <${TeamBadge} team=${team} size=${46} />
         <div>
           <div class="kicker">You're playing as</div>
           <div class="panel-title" style="margin:0">${team.name}</div>
@@ -210,7 +210,7 @@ function CrewStrip() {
     <div class="scroll-x">
       ${a.state.teams.map((t) => html`<a key=${t.id} class="panel tight" href=${`#/crews/${t.id}`}
         style=${`width:220px;text-decoration:none;color:inherit;border-top:8px solid ${t.color}`}>
-        <${AvatarPair} team=${t} size=${58} />
+        <${TeamBadge} team=${t} size=${58} />
         <div class="display" style="font-size:1.3rem;margin-top:10px;line-height:1.05">${t.name}</div>
         <div class="small muted">${memberNames(t)}</div>
         ${t.motto && html`<div class="small" style="margin-top:6px;font-style:italic">"${t.motto}"</div>`}

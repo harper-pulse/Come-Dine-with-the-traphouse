@@ -8,6 +8,7 @@ import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { gtaFontFace } from './fonts.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const PUBLIC = path.join(root, 'public');
@@ -32,6 +33,9 @@ const MIME = {
   '.webp': 'image/webp',
   '.woff2': 'font/woff2',
   '.ico': 'image/x-icon',
+  '.ttf': 'font/ttf',
+  '.otf': 'font/otf',
+  '.woff': 'font/woff',
   '.txt': 'text/plain; charset=utf-8',
 };
 
@@ -82,6 +86,7 @@ function serveStatic(req, res, url) {
     return res.end('Not found');
   }
   res.writeHead(200, { 'content-type': MIME[path.extname(file)] || 'application/octet-stream', 'cache-control': 'no-cache' });
+  if (rel === '/css/app.css') return res.end(gtaFontFace(PUBLIC) + fs.readFileSync(file, 'utf8'));
   fs.createReadStream(file).pipe(res);
 }
 

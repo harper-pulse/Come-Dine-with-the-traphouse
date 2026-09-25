@@ -1,7 +1,7 @@
 // Personal team links land here: #/join/ABC123
 import { html, useEffect, useState } from '../lib.js';
 import { useApp, app, loginTeam, teamById, hostNightOf, tz } from '../store.js';
-import { FireText, AvatarPair } from '../components.js';
+import { FireText, TeamBadge, TeamPortrait } from '../components.js';
 import { sound, confetti } from '../fx.js';
 import { fmtDayLong } from '../util.js';
 
@@ -44,7 +44,7 @@ export function JoinView({ code }) {
   if (status === 'error') {
     return html`<div class="page narrow stack-lg" style="padding-top:20px">
       <div class="panel center stack">
-        <${FireText} text="BUSTED" tone="blood" style="font-size:3rem" />
+        <${FireText} text="busted" style="font-size:3rem" />
         <p>${error}</p>
         <a class="btn" href="#/me">Enter the code by hand</a>
       </div>
@@ -55,7 +55,7 @@ export function JoinView({ code }) {
   return html`<div class="page narrow stack-lg" style="padding-top:20px">
     <section class="panel tone-orange halftone has-flames center stack">
       <div class="kicker" style="color:#fff">Welcome to the traphouse</div>
-      <div class="row" style="justify-content:center"><${AvatarPair} team=${team} size=${86} /></div>
+      <div class="row" style="justify-content:center">${team?.portrait ? html`<${TeamPortrait} team=${team} size=${240} />` : html`<${TeamBadge} team=${team} size=${86} />`}</div>
       <${FireText} tag="h1" text=${team?.name || 'You are in'} tone="cream" style="font-size:clamp(2.4rem,11vw,3.6rem)" />
       <p style="font-weight:600">This phone is now logged in for your team.</p>
       ${hosting && html`<p>You host <strong>Night ${hosting.number}</strong>${hosting.startsAt ? ` on ${fmtDayLong(hosting.startsAt, tz())}` : ''}.</p>`}

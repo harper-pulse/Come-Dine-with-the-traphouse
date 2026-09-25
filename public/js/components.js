@@ -68,11 +68,18 @@ export function PageTitle({ kicker, title, tone = '', children }) {
 /* People                                                              */
 /* ------------------------------------------------------------------ */
 
+export function avatarSrc(member) {
+  if (member?.avatar === 'custom' && member.avatarUrl) return member.avatarUrl;
+  if (member?.avatar && member.avatar !== 'custom') return `/img/crew/${member.avatar}.webp`;
+  return '';
+}
+
 export function Avatar({ member, team, size = 44 }) {
   const style = `--size:${size}px;--team:${team?.color || 'var(--flame-3)'}`;
-  if (member?.avatar) {
+  const src = avatarSrc(member);
+  if (src) {
     return html`<span class="avatar" style=${style}>
-      <img src=${`/img/crew/${member.avatar}.webp`} alt="" loading="lazy" width=${size} height=${size} />
+      <img src=${src} alt="" loading="lazy" width=${size} height=${size} />
     </span>`;
   }
   return html`<span class="avatar" style=${style} aria-hidden="true">${initials(member?.name)}</span>`;
@@ -85,10 +92,29 @@ export function AvatarPair({ team, size = 44 }) {
   </span>`;
 }
 
+// One circle with the team's GTA portrait if they have one, else both players.
+export function TeamBadge({ team, size = 44 }) {
+  if (!team) return null;
+  if (team.portrait) {
+    return html`<span class="avatar portrait-badge" style=${`--size:${Math.round(size * 1.25)}px;--team:${team.color}`}>
+      <img src=${team.portrait} alt="" loading="lazy" width=${size} height=${size} />
+    </span>`;
+  }
+  return html`<${AvatarPair} team=${team} size=${size} />`;
+}
+
+// Big comic-panel version of the team portrait, for crew cards and the reveal.
+export function TeamPortrait({ team, size = 220, tilt = true }) {
+  if (!team?.portrait) return null;
+  return html`<figure class=${`team-portrait ${tilt ? 'tilt' : ''}`} style=${`--w:${size}px;--team:${team.color}`}>
+    <img src=${team.portrait} alt=${`${team.name} in GTA style`} loading="lazy" width=${size} height=${size} />
+  </figure>`;
+}
+
 export function TeamChip({ team, size = 40, sub, link = true }) {
   if (!team) return html`<span class="muted">TBC</span>`;
   const inner = html`
-    <${AvatarPair} team=${team} size=${size} />
+    <${TeamBadge} team=${team} size=${size} />
     <span style="min-width:0">
       <span class="team-name" style="display:block">${team.name}</span>
       <span class="team-members" style="display:block">${sub ?? memberNames(team)}</span>

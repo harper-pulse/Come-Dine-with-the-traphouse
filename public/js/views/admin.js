@@ -16,7 +16,8 @@ import {
 } from '../store.js';
 import { request } from '../api.js';
 import { go } from '../router.js';
-import { FireText, PageTitle, Avatar, AvatarPair, Sheet, Dots, Icon, TeamDot, Progress } from '../components.js';
+import { FireText, PageTitle, Avatar, TeamBadge, Sheet, Dots, Icon, TeamDot, Progress } from '../components.js';
+import { PortraitsSection } from '../portraits.js';
 import { toast, sound, celebrate } from '../fx.js';
 import {
   TEAM_COLORS,
@@ -351,7 +352,7 @@ function TeamAdmin({ team, code }) {
   const link = joinLink(code);
   return html`<article class="panel stack" style=${`border-top:10px solid ${full.color}`}>
     <div class="row between wrap">
-      <div class="row"><${AvatarPair} team=${full} size=${46} /><div><div class="panel-title" style="margin:0">${full.name}</div><div class="small muted">${memberNames(full)}</div></div></div>
+      <div class="row"><${TeamBadge} team=${full} size=${46} /><div><div class="panel-title" style="margin:0">${full.name}</div><div class="small muted">${memberNames(full)}</div></div></div>
       <button class="btn sm dark" onClick=${() => setEdit(!edit)}><${Icon} name="edit" size="18" />${edit ? 'Close' : 'Edit'}</button>
     </div>
     <div class="row wrap">
@@ -371,6 +372,11 @@ function TeamAdmin({ team, code }) {
           style=${`width:34px;height:34px;border-radius:50%;background:${c};border:3px solid ${full.color === c ? '#fff' : 'var(--ink)'};cursor:pointer`}></button>`)}</div>
       </div>
       <${ProfileForm} team=${full} saving=${busy === 'profile'} onSave=${(p) => run('profile', () => adminAction({ action: 'teams', teams: [{ id: full.id, ...p }] }), 'Team saved.')} />
+      <${PortraitsSection} team=${full} ai=${{ mode: a.admin.ai?.mode }} teamId=${full.id} />
+      ${a.admin.ai?.mode !== 'off' && html`<div class="row between wrap">
+        <span class="small muted">AI portrait goes used by this team: ${Number(a.admin.ai?.used?.[full.id] || 0)} of ${a.admin.ai?.limit}</span>
+        <button class="btn sm dark" disabled=${busy === 'goes'} onClick=${() => run('goes', () => adminAction({ action: 'resetAiGoes', teamId: full.id }), 'AI goes reset.')}>Reset goes</button>
+      </div>`}
       <div class="row wrap">
         <button class="btn sm dark" disabled=${busy === 'regen'} onClick=${() => confirm(`Make a new code for ${full.name}? Their old link stops working and they'll need the new one.`) && run('regen', () => adminAction({ action: 'regenCode', teamId: full.id }), 'New code made. Send them the new invite.')}>New code</button>
         <button class="btn sm red" disabled=${busy === 'remove'} onClick=${() => confirm(`Remove ${full.name} completely? Their night and every scorecard they gave or got will be deleted.`) && run('remove', () => adminAction({ action: 'removeTeam', teamId: full.id }), 'Team removed.')}>Remove team</button>

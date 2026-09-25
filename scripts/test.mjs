@@ -15,8 +15,8 @@ const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'cdwm-test-'));
 const port = 4100 + Math.floor(Math.random() * 500);
 const base = `http://127.0.0.1:${port}`;
 
-const env = { ...process.env, PORT: String(port), LOCAL_DATA_DIR: dataDir };
-for (const k of ['KV_REST_API_URL', 'KV_REST_API_TOKEN', 'UPSTASH_REDIS_REST_URL', 'UPSTASH_REDIS_REST_TOKEN', 'VERCEL', 'ADMIN_PIN']) delete env[k];
+const env = { ...process.env, PORT: String(port), LOCAL_DATA_DIR: dataDir, AVATAR_AI: 'mock', AVATAR_LIMIT: '2' };
+for (const k of ['KV_REST_API_URL', 'KV_REST_API_TOKEN', 'UPSTASH_REDIS_REST_URL', 'UPSTASH_REDIS_REST_TOKEN', 'VERCEL', 'ADMIN_PIN', 'AI_GATEWAY_API_KEY', 'AVATAR_MODEL']) delete env[k];
 const server = spawn(process.execPath, [path.join(root, 'scripts/dev.mjs')], { env, stdio: ['ignore', 'pipe', 'inherit'] });
 await new Promise((resolve) => server.stdout.on('data', (d) => String(d).includes('running at') && resolve()));
 
@@ -178,6 +178,61 @@ await step('team edits profile and dietary needs', async () => {
   assert.ok(!JSON.stringify(s).includes('No mushrooms'), 'dietary is private');
   const me = await api('GET', '/api/team', { token: teamTokens.t3 });
   assert.equal(me.data.dietary.find((d) => d.teamId === 't1').members[0].dietary, 'No mushrooms');
+});
+
+const JPEG = Buffer.from('/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/wAALCAABAAEBAREA/8QAFAABAAAAAAAAAAAAAAAAAAAACf/EABQQAQAAAAAAAAAAAAAAAAAAAAD/2gAIAQEAAD8AKp//2Q==', 'base64');
+
+await step('AI portraits: generate, keep, serve, limit and remove', async () => {
+  const me = await api('GET', '/api/team', { token: teamTokens.t2 });
+  assert.equal(me.data.ai.mode, 'mock');
+  assert.equal(me.data.ai.left, 2);
+
+  const gen = await fetch(`${base}/api/avatar?action=generate&target=team`, { method: 'POST', headers: { authorization: `Bearer ${teamTokens.t2}`, 'content-type': 'image/jpeg' }, body: JPEG });
+  assert.equal(gen.status, 200);
+  assert.equal(gen.headers.get('x-ai-goes-left'), '1');
+  assert.ok((await gen.arrayBuffer()).byteLength > 0);
+
+  const save = await fetch(`${base}/api/avatar?action=save&target=team`, { method: 'POST', headers: { authorization: `Bearer ${teamTokens.t2}`, 'content-type': 'image/jpeg' }, body: JPEG });
+  assert.equal(save.status, 200);
+  const { url } = await save.json();
+  let s = await state();
+  assert.equal(s.teams.find((t) => t.id === 't2').portrait, url);
+  const img = await fetch(base + url);
+  assert.equal(img.status, 200);
+  assert.equal(img.headers.get('content-type'), 'image/jpeg');
+  assert.match(img.headers.get('cache-control'), /immutable/);
+
+  const solo = await fetch(`${base}/api/avatar?action=save&target=t2a`, { method: 'POST', headers: { authorization: `Bearer ${teamTokens.t2}`, 'content-type': 'image/jpeg' }, body: JPEG });
+  assert.equal(solo.status, 200);
+  s = await state();
+  const member = s.teams.find((t) => t.id === 't2').members.find((m) => m.id === 't2a');
+  assert.equal(member.avatar, 'custom');
+  assert.ok(member.avatarUrl.startsWith('/api/avatar?id=member%3At2a'));
+
+  // Another team's player, junk bytes and a used-up allowance are all refused.
+  const other = await fetch(`${base}/api/avatar?action=save&target=t3a`, { method: 'POST', headers: { authorization: `Bearer ${teamTokens.t2}` }, body: JPEG });
+  assert.equal(other.status, 400);
+  const junk = await fetch(`${base}/api/avatar?action=save&target=team`, { method: 'POST', headers: { authorization: `Bearer ${teamTokens.t2}` }, body: Buffer.from('not an image') });
+  assert.equal(junk.status, 415);
+  await fetch(`${base}/api/avatar?action=generate&target=t2b`, { method: 'POST', headers: { authorization: `Bearer ${teamTokens.t2}` }, body: JPEG });
+  const capped = await fetch(`${base}/api/avatar?action=generate&target=t2b`, { method: 'POST', headers: { authorization: `Bearer ${teamTokens.t2}` }, body: JPEG });
+  assert.equal(capped.status, 429);
+
+  // The organiser can reset a team's goes, and can make portraits for any team.
+  assert.equal((await api('POST', '/api/admin', { token: admin, body: { action: 'resetAiGoes', teamId: 't2' } })).status, 200);
+  assert.equal((await api('GET', '/api/team', { token: teamTokens.t2 })).data.ai.left, 2);
+  const forT5 = await fetch(`${base}/api/avatar?action=save&target=team&teamId=t5`, { method: 'POST', headers: { authorization: `Bearer ${admin}` }, body: JPEG });
+  assert.equal(forT5.status, 200);
+
+  // Picking a poster character is still allowed afterwards, and removal works.
+  await api('POST', '/api/team', { token: teamTokens.t2, body: { action: 'profile', members: [{ id: 't2a', avatar: 'crew-1' }] } });
+  s = await state();
+  assert.equal(s.teams.find((t) => t.id === 't2').members.find((m) => m.id === 't2a').avatar, 'crew-1');
+  const del = await fetch(`${base}/api/avatar?target=t2a`, { method: 'DELETE', headers: { authorization: `Bearer ${teamTokens.t2}` } });
+  assert.equal(del.status, 200);
+  s = await state();
+  assert.equal(s.teams.find((t) => t.id === 't2').members.find((m) => m.id === 't2a').avatarUrl, '');
+  assert.equal(s.features.aiPortraits, true);
 });
 
 await step('organiser opens scoring for every night', async () => {

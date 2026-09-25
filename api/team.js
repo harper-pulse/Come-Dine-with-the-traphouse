@@ -4,6 +4,7 @@ import { handle, json, readJson, HttpError, str } from '../lib/http.js';
 import { loadAll, commit, mergeTeam, toJson, K, hostInfoFull, cleanHostInfo, cleanProfile } from '../lib/data.js';
 import { requireTeam } from '../lib/auth.js';
 import { storageKind } from '../lib/store.js';
+import { aiMode, aiLimit } from '../lib/ai-mode.js';
 import { cardKey, cleanCard, nightStatus } from '../public/js/shared/core.js';
 
 async function loadForTeam(request) {
@@ -31,7 +32,9 @@ function teamView(data, teamId) {
     const p = mergeTeam(t, data.profiles[t.id], { includePrivate: true });
     return { teamId: t.id, members: p.members.map((m) => ({ id: m.id, name: m.name, dietary: m.dietary })) };
   });
-  return { v: data.version, teamId, team, cards, nights, dietary };
+  const used = Number(data.avatarUsage?.[teamId] || 0);
+  const ai = { mode: aiMode(), limit: aiLimit(), left: Math.max(0, aiLimit() - used) };
+  return { v: data.version, teamId, team, cards, nights, dietary, ai };
 }
 
 export const GET = handle(async (request) => {

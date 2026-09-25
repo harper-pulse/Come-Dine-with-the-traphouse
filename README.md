@@ -13,6 +13,8 @@ The event portal for our Come Dine With Me series: 5 teams of 2, 5 nights, 1 cha
 - **The Grand Reveal.** A presenter mode for the TV: each team from last place to first, scores flipping in one guest at a time, the taxi confessionals, a WASTED screen for last place, a drum roll, MISSION PASSED with money rain for the winner, then the awards. Everyone else can follow along live on their phones.
 - **Awards.** Best Starter/Main/Dessert/Drinks/Vibe, Harshest Critic, Most Generous, Highest Single Score, Lowest Blow and Biggest Beef.
 - **Hosting tools.** Hosts set their theme, dress code, address (only visible to logged-in teams), menu (kept secret until they reveal it) and a message for guests. They can also see their guests' dietary requirements.
+- **GTA portraits.** Each team uploads a photo of the two of them, plus one of each player, and an AI artist redraws them in the poster's GTA loading-screen style (using the poster as its style reference). They're used for the team badges, crew cards and the Grand Reveal. There's also a free on-phone comic filter if AI isn't switched on.
+- **GTA touches throughout.** White-on-black GTA lettering, a black and white screen with "mission passed!" when you hand in a scorecard, WASTED and BUSTED screens, a GTA-style loading screen and GTA V style notifications.
 - **Food photos.** Upload pics per night (optional, needs a Vercel Blob store).
 - **Organiser control room.** Setup wizard, team names and characters (cropped from the poster), invite links and QR codes, dates and hosts, scoring overrides, a scorecard tracker, CSV export, backup and restore.
 - Works on phones first, can be added to the home screen, and shows a proper link preview in WhatsApp and iMessage.
@@ -30,6 +32,20 @@ You only need to do this once. It takes about 5 minutes.
 7. **Send the invites.** In **Control room > Teams & invites**, tap **Send invite** for each team. It opens your phone's share sheet with a ready-made WhatsApp message including their secret link. There's also **Copy all invites** and a QR code per team.
 
 If the site says "Connect the database", steps 2 and 4 haven't happened yet.
+
+### GTA portraits (AI)
+
+Portraits are drawn by an image model through **Vercel AI Gateway**, billed to your Vercel account (a few cents per portrait). On Vercel there is no key to set up: the portal signs in with the project's OIDC token automatically.
+
+- If uploads say AI portraits "are not connected", check **Settings > Security > Secure backend access with OIDC federation** is on, or create an AI Gateway API key in the Vercel dashboard (**AI Gateway > API keys**) and add it as the `AI_GATEWAY_API_KEY` environment variable.
+- If they say it's "out of credit", top up AI Gateway credits in the Vercel dashboard.
+- Each team gets 8 AI goes (each redraw is one). The organiser can reset a team's goes under **Teams & invites > Edit**, and can make portraits for any team from there too.
+- Original photos are only used to draw the portrait and are never stored. The finished portraits are kept in the Redis database, so no Blob store is needed.
+- The free comic filter always works, even with AI switched off.
+
+### The real GTA font (optional)
+
+The site uses Luckiest Guy, a free lookalike. For the actual GTA font, download **Pricedown** (free, by Typodermic), put the file in `public/fonts/` (any name containing "pricedown", as `.woff2`, `.woff`, `.ttf` or `.otf`) and push. The next deploy switches every GTA heading over to it automatically.
 
 ## On the night
 
@@ -56,7 +72,7 @@ With no Redis keys set, the dev server stores everything in a local file, so you
 
 - `public/` is the site. Plain ES modules with [Preact](https://preactjs.com) and [htm](https://github.com/developit/htm), no build step. Pages live in `public/js/views/`.
 - `public/js/shared/core.js` holds the rules and maths (night status, results, awards, the reveal script). The browser and the API both use it.
-- `api/` holds the Vercel Functions: `version`, `state`, `auth`, `team`, `admin`, `photos` and `calendar`. Shared server code is in `lib/`.
+- `api/` holds the Vercel Functions: `version`, `state`, `auth`, `team`, `admin`, `avatar`, `photos` and `calendar`. Shared server code is in `lib/` (`lib/gta-art.js` is the AI portrait artist).
 - Data lives in Upstash Redis. Phones poll a tiny, CDN-cached `/api/version` and only download the full state when something changes, so a whole series fits comfortably in Upstash's free tier.
 - Privacy: addresses, dietary requirements, team codes and every score stay off the public API until they're meant to be seen.
 
@@ -67,9 +83,13 @@ With no Redis keys set, the dev server stores everything in a local file, so you
 | `KV_REST_API_URL`, `KV_REST_API_TOKEN` | Yes | Added automatically when you connect Upstash Redis. |
 | `BLOB_READ_WRITE_TOKEN` | For photos | Added automatically when you connect a Blob store. |
 | `ADMIN_PIN` | Optional | Fixes the organiser PIN. Handy as a backup if the PIN is forgotten. |
+| `AI_GATEWAY_API_KEY` | Optional | Only needed for AI portraits if OIDC isn't available (or when running locally). |
+| `AVATAR_MODEL` | Optional | Image model for portraits. Default `google/gemini-3.1-flash-image`. Try `google/gemini-3-pro-image` for higher quality, or `openai/gpt-image-2`. |
+| `AVATAR_LIMIT` | Optional | AI portrait goes per team (default 8). |
+| `AVATAR_AI` | Optional | `off` to disable AI portraits (the comic filter still works), `mock` for local testing. |
 | `SESSION_SECRET` | Optional | Signs logins. Defaults to a value derived from the Redis token. |
 | `KEY_PREFIX` | Optional | Prefix for Redis keys if you share the database (default `cdwm:`). |
 
 ## Credits
 
-Poster art by the crew. Fonts: Luckiest Guy, Barlow Condensed and Rubik (SIL Open Font License). Libraries: Preact and htm (MIT), qrcode-generator (MIT).
+Poster art by the crew. Fonts: Luckiest Guy, Barlow Condensed and Rubik (SIL Open Font License). Libraries: Preact and htm (MIT), qrcode-generator (MIT), Vercel AI SDK (Apache 2.0).

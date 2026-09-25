@@ -1,6 +1,6 @@
 import { html, useEffect } from '../lib.js';
 import { useApp, hostNightOf, tz, myTeamId } from '../store.js';
-import { FireText, PageTitle, Avatar } from '../components.js';
+import { FireText, PageTitle, Avatar, TeamPortrait } from '../components.js';
 import { fmtDay, num, ordinal } from '../util.js';
 
 function CrewCard({ team, highlight }) {
@@ -18,6 +18,7 @@ function CrewCard({ team, highlight }) {
       ${mine && html`<span class="pill hot">Your team</span>`}
     </div>
     <${FireText} tag="h2" text=${team.name} style="font-size:2rem;margin:8px 0 12px" />
+    ${team.portrait && html`<div style="margin:4px 0 16px"><${TeamPortrait} team=${team} size=${360} /></div>`}
     <div class="row wrap" style="gap:16px">
       ${team.members.map((m) => html`<div class="row" key=${m.id} style="gap:10px">
         <${Avatar} member=${m} team=${team} size=${72} />
