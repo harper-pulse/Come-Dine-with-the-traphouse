@@ -175,6 +175,15 @@ export async function loginTeam(code) {
   return r;
 }
 
+// Tap your name. `code` is only needed when the organiser has switched team codes on.
+export async function pickMember({ teamId, memberId, code }) {
+  const r = await request('POST', '/api/auth', { body: { action: 'pick', teamId, memberId, code } });
+  setTeamToken(r.token);
+  await loadTeam();
+  emit();
+  return r;
+}
+
 export async function loginAdmin(pin) {
   const r = await request('POST', '/api/auth', { body: { action: 'admin', pin } });
   setAdminToken(r.token);
@@ -243,4 +252,15 @@ export const myTeam = () => teamById(myTeamId());
 export const tz = () => app.state?.event?.timezone || 'Pacific/Auckland';
 export const hostNightOf = (teamId) => app.state?.nights?.find((n) => n.hostTeamId === teamId) || null;
 export const myCard = (nightId) => app.team?.cards?.find((c) => c.nightId === nightId) || null;
+// The person using this phone, when they logged in by tapping their name.
+export const me = () => app.team?.team?.members?.find((m) => m.id === app.team?.me) || null;
+export const loginMode = () => (app.state?.event?.login === 'code' ? 'code' : 'names');
+export const memberName = (teamId, memberId) => teamById(teamId)?.members?.find((m) => m.id === memberId)?.name || '';
+
+// The address to share. On Vercel it's the public production address, even
+// when the organiser is looking at a deployment link behind Vercel's login.
+export function siteUrl() {
+  return (app.state?.site?.url || location.origin).replace(/\/+$/, '');
+}
+export const joinLink = (code) => `${siteUrl()}/#/join/${code}`;
 export const addressOf = (nightId) => app.team?.nights?.find((n) => n.id === nightId)?.address || '';

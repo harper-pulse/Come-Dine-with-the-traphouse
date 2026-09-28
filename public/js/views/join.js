@@ -1,9 +1,31 @@
-// Personal team links land here: #/join/ABC123
+// Private team links land here: #/join/ABC123. They log the phone straight
+// in for that team, then ask which of the team you are.
 import { html, useEffect, useState } from '../lib.js';
-import { useApp, app, loginTeam, teamById, hostNightOf, tz } from '../store.js';
-import { FireText, TeamBadge, TeamPortrait } from '../components.js';
-import { sound, confetti } from '../fx.js';
+import { useApp, app, loginTeam, pickMember, teamById, hostNightOf, tz, me } from '../store.js';
+import { FireText, TeamBadge, TeamPortrait, Avatar } from '../components.js';
+import { sound, confetti, toast } from '../fx.js';
 import { fmtDayLong } from '../util.js';
+
+function WhichOne({ team, code }) {
+  const [busy, setBusy] = useState('');
+  if (!team) return null;
+  const pick = async (m) => {
+    setBusy(m.id);
+    try {
+      await pickMember({ teamId: team.id, memberId: m.id, code });
+      sound.play('pop');
+    } catch (err) {
+      toast(err.message, 'error');
+    } finally {
+      setBusy('');
+    }
+  };
+  return html`<div class="who-people" style="text-align:left">
+    ${team.members.map((m, i) => html`<button type="button" key=${m.id} class="who-person" disabled=${Boolean(busy)} onClick=${() => pick(m)}>
+      <${Avatar} member=${m} team=${team} size=${34} /><span>${busy === m.id ? 'One sec…' : m.name || `Player ${i + 1}`}</span>
+    </button>`)}
+  </div>`;
+}
 
 export function JoinView({ code }) {
   const a = useApp();
@@ -46,7 +68,7 @@ export function JoinView({ code }) {
       <div class="panel center stack">
         <${FireText} text="busted" style="font-size:3rem" />
         <p>${error}</p>
-        <a class="btn" href="#/me">Enter the code by hand</a>
+        <a class="btn" href="#/me">Tap your name instead</a>
       </div>
     </div>`;
   }
@@ -57,7 +79,10 @@ export function JoinView({ code }) {
       <div class="kicker" style="color:#fff">Welcome to the traphouse</div>
       <div class="row" style="justify-content:center">${team?.portrait ? html`<${TeamPortrait} team=${team} size=${240} />` : html`<${TeamBadge} team=${team} size=${86} />`}</div>
       <${FireText} tag="h1" text=${team?.name || 'You are in'} tone="cream" style="font-size:clamp(2.4rem,11vw,3.6rem)" />
-      <p style="font-weight:600">This phone is now logged in for your team.</p>
+      ${me()
+        ? html`<p style="font-weight:600">This phone is now logged in as ${me().name}.</p>`
+        : html`<p style="font-weight:600">This phone is now logged in for your team. Which one are you?</p>
+          <${WhichOne} team=${team} code=${code} />`}
       ${hosting && html`<p>You host <strong>Night ${hosting.number}</strong>${hosting.startsAt ? ` on ${fmtDayLong(hosting.startsAt, tz())}` : ''}.</p>`}
       <div class="flames" aria-hidden="true"></div>
     </section>

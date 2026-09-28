@@ -2,7 +2,7 @@
 // POST /api/team {action} -> score | profile | host
 import { handle, json, readJson, HttpError, str } from '../lib/http.js';
 import { loadAll, commit, mergeTeam, toJson, K, hostInfoFull, cleanHostInfo, cleanProfile } from '../lib/data.js';
-import { requireTeam } from '../lib/auth.js';
+import { teamSession } from '../lib/auth.js';
 import { storageKind } from '../lib/store.js';
 import { aiMode, aiLimit } from '../lib/ai-mode.js';
 import { cardKey, cleanCard, nightStatus } from '../public/js/shared/core.js';
@@ -11,14 +11,15 @@ async function loadForTeam(request) {
   if (storageKind() === 'none') throw new HttpError(503, 'storage_missing', 'No database connected yet.');
   const data = await loadAll();
   if (!data.config) throw new HttpError(409, 'not_setup', 'The portal has not been set up yet.');
-  const teamId = requireTeam(request, data.secrets);
+  const { teamId, memberId } = teamSession(request, data.secrets);
   if (!data.config.teams.some((t) => t.id === teamId)) {
     throw new HttpError(401, 'not_team', 'Your team no longer exists. Ask the organiser.');
   }
-  return { data, teamId };
+  const members = data.profiles[teamId]?.members || [];
+  return { data, teamId, memberId: members.some((m) => m.id === memberId) ? memberId : null };
 }
 
-function teamView(data, teamId) {
+function teamView(data, teamId, memberId) {
   const { config } = data;
   const team = mergeTeam(config.teams.find((t) => t.id === teamId), data.profiles[teamId], { includePrivate: true });
   const cards = Object.values(data.cards).filter((c) => c.teamId === teamId);
@@ -34,16 +35,16 @@ function teamView(data, teamId) {
   });
   const used = Number(data.avatarUsage?.[teamId] || 0);
   const ai = { mode: aiMode(), limit: aiLimit(), left: Math.max(0, aiLimit() - used) };
-  return { v: data.version, teamId, team, cards, nights, dietary, ai };
+  return { v: data.version, teamId, me: memberId, team, cards, nights, dietary, ai };
 }
 
 export const GET = handle(async (request) => {
-  const { data, teamId } = await loadForTeam(request);
-  return json(teamView(data, teamId));
+  const { data, teamId, memberId } = await loadForTeam(request);
+  return json(teamView(data, teamId, memberId));
 });
 
 export const POST = handle(async (request) => {
-  const { data, teamId } = await loadForTeam(request);
+  const { data, teamId, memberId } = await loadForTeam(request);
   const body = await readJson(request);
   const { config } = data;
 
@@ -65,7 +66,8 @@ export const POST = handle(async (request) => {
     const key = cardKey(night.id, teamId);
     const existing = data.cards[key];
     const now = new Date().toISOString();
-    const saved = { nightId: night.id, teamId, ...card, submittedAt: existing?.submittedAt || now, updatedAt: now };
+    // `by` is who handed it in (or last changed it), so a prank shows up.
+    const saved = { nightId: night.id, teamId, ...card, by: memberId, submittedAt: existing?.submittedAt || now, updatedAt: now };
     const v = await commit([['HSET', K.cards, key, toJson(saved)]]);
     return json({ ok: true, v, card: saved, updated: Boolean(existing) });
   }

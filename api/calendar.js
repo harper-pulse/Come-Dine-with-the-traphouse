@@ -3,6 +3,7 @@
 // full address) go in the invite.
 import { handle, HttpError, queryParams } from '../lib/http.js';
 import { loadAll, buildPublicState } from '../lib/data.js';
+import { publicSiteUrl } from '../lib/site.js';
 
 function esc(text) {
   return String(text || '')
@@ -34,7 +35,7 @@ export const GET = handle(async (request) => {
   const nightId = queryParams(request).get('night');
   const nights = state.nights.filter((n) => n.startsAt && (!nightId || n.id === nightId));
   if (!nights.length) throw new HttpError(404, 'no_dates', 'No dates set yet.');
-  const origin = new URL(request.url).origin;
+  const origin = publicSiteUrl() || new URL(request.url).origin;
   const host = new URL(origin).hostname;
 
   const lines = [

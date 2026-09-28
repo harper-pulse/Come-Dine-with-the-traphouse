@@ -55,7 +55,7 @@ function Header({ route }) {
         ${team
           ? html`<a class="who-chip" href="#/me" aria-label=${`Logged in as ${team.name}`}>
               <${TeamFace} team=${team} size=${28} /><span>${team.name}</span></a>`
-          : a.state?.setup && html`<a class="btn sm" href="#/me">Team login</a>`}
+          : a.state?.setup && html`<a class="btn sm" href="#/me">Log in</a>`}
       </div>
     </div>
   </header>`;
@@ -71,7 +71,7 @@ function MoreSheet({ open, onClose }) {
       ${item('#/photos', 'photo', 'Food photos')}
       ${item('#/rules', 'rules', 'House rules')}
       ${item('#/reveal', 'reveal', 'The Grand Reveal')}
-      ${item('#/me', 'me', a.team ? 'My team' : 'Team login')}
+      ${item('#/me', 'me', a.team ? 'My team' : 'Log in')}
       ${item('#/admin', 'shield', 'Organiser')}
       <button type="button" onClick=${() => {
         sound.muted = !sound.muted;

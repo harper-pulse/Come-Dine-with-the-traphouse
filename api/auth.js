@@ -1,8 +1,9 @@
 // GET  /api/auth           -> is the portal set up? has an organiser claimed it?
-// POST /api/auth {action}  -> setup | admin | team
+// POST /api/auth {action}  -> setup | admin | team (code) | pick (tap your name)
 import { handle, json, readJson, HttpError, clientIp, str } from '../lib/http.js';
 import { loadAll, commit, buildInitialEvent, emptyReveal, toJson, K } from '../lib/data.js';
 import { pipeline, storageKind, parseJson } from '../lib/store.js';
+import { loginMode } from '../lib/site.js';
 import {
   adminToken,
   teamToken,
@@ -61,6 +62,26 @@ export const POST = handle(async (request) => {
       throw new HttpError(401, 'bad_code', 'That team code is not right. Check the message from your organiser.');
     }
     return json({ ok: true, teamId, token: teamToken(teamId, data.secrets.teamCodes[teamId]) });
+  }
+
+  // Tap your name. With team codes switched on, the team's code is needed too.
+  if (body.action === 'pick') {
+    const data = await loadAll();
+    if (!data.config) throw new HttpError(409, 'not_setup', 'The organiser has not set the portal up yet.');
+    const teamId = str(body.teamId, 20);
+    if (!data.config.teams.some((t) => t.id === teamId)) throw new HttpError(404, 'no_team', 'That team isn’t in the event any more.');
+    const memberId = str(body.memberId, 20);
+    if (!(data.profiles[teamId]?.members || []).some((m) => m.id === memberId)) {
+      throw new HttpError(400, 'no_member', 'That name isn’t on this team.');
+    }
+    if (loginMode(data.config) === 'code') {
+      await checkRateLimit(ip);
+      if (findTeamByCode(body.code, data.secrets) !== teamId) {
+        await recordFailure(ip);
+        throw new HttpError(401, 'bad_code', body.code ? 'That team code isn’t right. Check the message from your organiser.' : 'Type your team code as well.');
+      }
+    }
+    return json({ ok: true, teamId, memberId, token: teamToken(teamId, data.secrets.teamCodes[teamId], memberId) });
   }
 
   if (body.action === 'admin') {

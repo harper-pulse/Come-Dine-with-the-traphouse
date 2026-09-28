@@ -11,6 +11,7 @@ import {
   useNow,
   WhenLine,
   Icon,
+  TeamLogin,
 } from '../components.js';
 import { currentNight, nightStatus } from '../shared/core.js';
 import { fmtDay, fmtTime, memberNames, isToday, plural } from '../util.js';
@@ -70,7 +71,7 @@ function NextUp({ night, now }) {
   } else if (hosting) {
     cta = html`<a class="btn block" href="#/me"><${Icon} name="edit" />Edit your menu & details</a>`;
   } else if (status === 'open' && !mine) {
-    cta = html`<a class="btn block" href="#/me">Log in to score</a>`;
+    cta = html`<a class="btn block" href="#/me">Tap your name to score</a>`;
   } else {
     cta = html`<a class="btn paper block" href=${`#/night/${night.id}`}>Night details</a>`;
   }
@@ -223,6 +224,7 @@ export function HomeView() {
   const night = currentNight(s.nights, now);
   return html`<div class="page stack-lg">
     ${s.show.status === 'live' && html`<${LiveBanner} />`}
+    ${!a.team && html`<section class="panel who-panel"><${TeamLogin} /></section>`}
     <${Hero} s=${s} />
     <${NextUp} night=${night} now=${now} />
     ${a.team && html`<${YourTeam} now=${now} />`}

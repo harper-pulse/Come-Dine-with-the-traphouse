@@ -7,7 +7,7 @@ The event portal for our Come Dine With Me series. Five teams of two, and every 
 ## What it does
 
 - **The rotation.** Every night, who's hosting, who's coming, the date and the theme, plus a "who's where" grid. One-tap "add to calendar" for Apple, Outlook and Google.
-- **Team logins with no passwords.** Each team gets a secret link (and a 6 letter backup code). Tapping the link logs that phone in as the team.
+- **No passwords or codes.** Post one link in the group chat. Everyone opens it and taps their name, and their phone remembers them. If anyone mucks around, the organiser can switch team codes on in Settings.
 - **Scorecards.** At the end of each night every guest team hands in one scorecard for the hosts: a secret overall score out of 10, star ratings for Starter, Main, Dessert, Drinks and Vibe, and an optional anonymous "taxi confessional". You can't score your own dinner. Cards can be edited until they lock at midday the next day.
 - **Sealed scores.** Nobody sees any score (not even the organiser, unless they choose to peek) until the Grand Reveal. Or switch to night-by-night reveals for a running leaderboard.
 - **The Grand Reveal.** A presenter mode for the TV: each team from last place to first, scores flipping in one guest at a time, the taxi confessionals, a WASTED screen for last place, a drum roll, MISSION PASSED with money rain for the winner, then the awards. Everyone else can follow along live on their phones.
@@ -27,11 +27,18 @@ You only need to do this once. It takes about 5 minutes.
 2. **Add the database.** Open the project, go to the **Storage** tab, click **Create Database**, pick **Upstash for Redis** and choose the free plan and the **Sydney** region (the API runs in Sydney too, so it stays fast). Connect it to the project. Vercel adds the `KV_REST_API_URL` and `KV_REST_API_TOKEN` settings for you.
 3. **(Optional) Switch on photos.** In the same Storage tab, create a **Blob** store and connect it to the project.
 4. **Redeploy.** Go to **Deployments**, open the latest one and click **Redeploy**, so it picks up the new storage.
-5. **Claim the organiser role straight away.** Open your site and tap **I'm the organiser**. Whoever does this first becomes the organiser, so do it before sharing the link. (To lock it down first, add an `ADMIN_PIN` environment variable in Vercel before deploying. Then only that PIN can set things up.)
-6. **Run the setup wizard.** Pick your PIN, enter team names and players, and set the first dinner date and the hosting order.
-7. **Send the invites.** In **Control room > Teams & invites**, tap **Send invite** for each team. It opens your phone's share sheet with a ready-made WhatsApp message including their secret link. There's also **Copy all invites** and a QR code per team.
+5. **Make the link public.** Vercel can put its own login screen in front of your site (it calls this Deployment Protection). Your mates don't have Vercel accounts, so switch it off: **Settings > Deployment Protection**, turn off **Vercel Authentication**, then **Save**. The address to share is the short one under **Domains** on the project page, like `come-dine-with-the-traphouse.vercel.app`. The portal's invite buttons always use that one.
+6. **Claim the organiser role straight away.** Open your site and tap **I'm the organiser**. Whoever does this first becomes the organiser, so do it before sharing the link. (To lock it down first, add an `ADMIN_PIN` environment variable in Vercel before deploying. Then only that PIN can set things up.)
+7. **Run the setup wizard.** Pick your PIN, enter team names and players, and set the first dinner date and the hosting order.
+8. **Send the invite.** In **Control room > Teams & invites**, tap **Send to the group chat**. It opens your phone's share sheet with a ready-made message. Everyone opens the link and taps their name. There's a QR code too, handy on the night.
 
-If the site says "Connect the database", steps 2 and 4 haven't happened yet.
+If the site says "Connect the database", steps 2 and 4 haven't happened yet. If someone sees a Vercel login screen, step 5 hasn't.
+
+### Logins
+
+- By default everyone logs in by tapping their name. Anyone with the link can tap any name, so keep the link in your group chat.
+- If someone plays silly buggers, go to **Control room > Settings > How do people log in?** and pick **Name and team code**. People then type their team's 6 letter code after tapping their name. Each team's code and private link are on its card under **Teams & invites**. **New code** logs every phone on that team out.
+- The organiser's scorecard tracker shows who handed in each card.
 
 ### GTA portraits (AI)
 
@@ -75,7 +82,7 @@ With no Redis keys set, the dev server stores everything in a local file, so you
 - `api/` holds the Vercel Functions: `version`, `state`, `auth`, `team`, `admin`, `avatar`, `photos` and `calendar`. Shared server code is in `lib/` (`lib/gta-art.js` is the AI portrait artist).
 - Data lives in Upstash Redis. Phones poll a tiny, CDN-cached `/api/version` and only download the full state when something changes, so a whole series fits comfortably in Upstash's free tier.
 - Light on mobile data. Portraits and food photos are saved with a small copy for badges and photo grids (a 256px portrait is about 20 KB, against 150 KB for the full one), and `index.html` asks for every script at once instead of one import at a time.
-- Privacy: addresses, dietary requirements, team codes and every score stay off the public API until they're meant to be seen.
+- Privacy: addresses, dietary requirements, team codes and every score stay off the public API until they're meant to be seen. Addresses and dietary needs only show once someone has tapped their name.
 
 ### Settings (environment variables)
 

@@ -1,5 +1,5 @@
 import { html } from '../lib.js';
-import { useApp, teamById, tz, myTeamId } from '../store.js';
+import { useApp, teamById, tz, myTeamId, siteUrl } from '../store.js';
 import { FireText, PageTitle, TeamChip, NightPill, TeamDot, useNow, Icon } from '../components.js';
 import { currentNight, nightStatus } from '../shared/core.js';
 import { fmt, fmtTime, googleCalendarUrl, memberNames } from '../util.js';
@@ -14,7 +14,7 @@ function NightCard({ night, now }) {
     ? googleCalendarUrl({
         title: `${a.state.event.name}: Night ${night.number} at ${host?.name}`,
         startsAt: night.startsAt,
-        details: `Hosted by ${host?.name} (${memberNames(host)}). Address and menu: ${location.origin}/#/night/${night.id}`,
+        details: `Hosted by ${host?.name} (${memberNames(host)}). Address and menu: ${siteUrl()}/#/night/${night.id}`,
         location: night.suburb,
       })
     : null;

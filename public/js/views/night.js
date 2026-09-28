@@ -1,5 +1,5 @@
 import { html } from '../lib.js';
-import { useApp, teamById, nightById, tz, myTeamId, myCard, addressOf } from '../store.js';
+import { useApp, teamById, nightById, tz, myTeamId, myCard, addressOf, siteUrl } from '../store.js';
 import {
   FireText,
   TeamBadge,
@@ -142,7 +142,7 @@ export function NightView({ id }) {
     ? googleCalendarUrl({
         title: `${a.state.event.name}: Night ${night.number} at ${host?.name}`,
         startsAt: night.startsAt,
-        details: `Hosted by ${host?.name}. ${location.origin}/#/night/${night.id}`,
+        details: `Hosted by ${host?.name}. ${siteUrl()}/#/night/${night.id}`,
         location: address || night.suburb,
       })
     : null;
@@ -171,7 +171,7 @@ export function NightView({ id }) {
             ? html`<a href=${mapsUrl(address)} target="_blank" rel="noopener" style="color:#fff">${address} ↗</a>`
             : a.team
               ? html`<span class="muted" style="color:rgba(255,255,255,.75)">Not added yet</span>`
-              : html`<a href="#/me" style="color:#fff">Log in to see it</a>`}
+              : html`<a href="#/me" style="color:#fff">Tap your name to see it</a>`}
         </dd>
       </dl>
       ${status === 'upcoming' && night.startsAt && html`<div style="margin-bottom:14px"><${Countdown} to=${night.startsAt} /></div>`}

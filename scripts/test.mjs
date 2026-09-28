@@ -15,7 +15,7 @@ const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'cdwm-test-'));
 const port = 4100 + Math.floor(Math.random() * 500);
 const base = `http://127.0.0.1:${port}`;
 
-const env = { ...process.env, PORT: String(port), LOCAL_DATA_DIR: dataDir, AVATAR_AI: 'mock', AVATAR_LIMIT: '2' };
+const env = { ...process.env, PORT: String(port), LOCAL_DATA_DIR: dataDir, AVATAR_AI: 'mock', AVATAR_LIMIT: '2', VERCEL_PROJECT_PRODUCTION_URL: 'traphouse-test.vercel.app' };
 for (const k of ['KV_REST_API_URL', 'KV_REST_API_TOKEN', 'UPSTASH_REDIS_REST_URL', 'UPSTASH_REDIS_REST_TOKEN', 'VERCEL', 'ADMIN_PIN', 'AI_GATEWAY_API_KEY', 'AVATAR_MODEL']) delete env[k];
 const server = spawn(process.execPath, [path.join(root, 'scripts/dev.mjs')], { env, stdio: ['ignore', 'pipe', 'inherit'] });
 await new Promise((resolve) => server.stdout.on('data', (d) => String(d).includes('running at') && resolve()));
@@ -131,6 +131,40 @@ await step('team codes log in, junk codes do not', async () => {
     assert.equal(r.data.teamId, teamId);
     teamTokens[teamId] = r.data.token;
   }
+});
+
+let pickedT3 = null;
+
+await step('players log in by tapping their name, no code needed', async () => {
+  const s = await state();
+  assert.equal(s.event.login, 'names');
+  assert.equal(s.site.url, 'https://traphouse-test.vercel.app');
+  const t3 = s.teams.find((t) => t.id === 't3');
+  const r = await api('POST', '/api/auth', { body: { action: 'pick', teamId: 't3', memberId: t3.members[1].id } });
+  assert.equal(r.status, 200, JSON.stringify(r.data));
+  const mine = await api('GET', '/api/team', { token: r.data.token });
+  assert.equal(mine.data.teamId, 't3');
+  assert.equal(mine.data.me, t3.members[1].id);
+  pickedT3 = r.data.token;
+  // Another team's player or a made-up team is refused.
+  assert.equal((await api('POST', '/api/auth', { body: { action: 'pick', teamId: 't3', memberId: 't1a' } })).status, 400);
+  assert.equal((await api('POST', '/api/auth', { body: { action: 'pick', teamId: 'zz', memberId: 't1a' } })).status, 404);
+  // A team link login doesn't know which player you are.
+  assert.equal((await api('GET', '/api/team', { token: teamTokens.t3 })).data.me, null);
+});
+
+await step('the organiser can switch team codes back on', async () => {
+  await api('POST', '/api/admin', { token: admin, body: { action: 'event', login: 'code' } });
+  assert.equal((await state()).event.login, 'code');
+  const pick = (code) => api('POST', '/api/auth', { body: { action: 'pick', teamId: 't2', memberId: 't2a', code } });
+  assert.equal((await pick()).status, 401);
+  assert.equal((await pick('WRONG1')).status, 401);
+  assert.equal((await pick(codes.t2.toLowerCase())).status, 200);
+  // Saving other settings keeps the choice.
+  await api('POST', '/api/admin', { token: admin, body: { action: 'event', tagline: (await state()).event.tagline } });
+  assert.equal((await state()).event.login, 'code');
+  await api('POST', '/api/admin', { token: admin, body: { action: 'event', login: 'names' } });
+  assert.equal((await pick()).status, 200);
 });
 
 await step('team tokens cannot use admin routes', async () => {
@@ -303,6 +337,18 @@ await step('editing a scorecard keeps one card per team', async () => {
   assert.equal(s.counts.expected, 20);
 });
 
+await step('scorecards record who handed them in, for the organiser only', async () => {
+  const t3 = (await state()).teams.find((t) => t.id === 't3');
+  const overall = given.t3.t1;
+  const stars = { starter: 3, main: 4, dessert: overall > 7 ? 5 : 3, drinks: 4, vibe: 3 };
+  const r = await api('POST', '/api/team', { token: pickedT3, body: { action: 'score', nightId: hostNight.t1, overall, stars, comment: 't3 on t1: secret thoughts' } });
+  assert.equal(r.status, 200, JSON.stringify(r.data));
+  assert.equal(r.data.card.by, t3.members[1].id);
+  const a = await api('GET', '/api/admin', { token: admin });
+  assert.equal(a.data.cards.find((c) => c.teamId === 't3' && c.nightId === hostNight.t1).by, t3.members[1].id);
+  assert.ok(!JSON.stringify(await state()).includes('"by"'));
+});
+
 await step('public state leaks no scores or comments before the reveal', async () => {
   const s = await state();
   const text = JSON.stringify(s);
@@ -344,6 +390,7 @@ await step('the Grand Reveal steps through from last place to the winner', async
   assert.equal(s.show.status, 'done');
   assert.equal(s.results.ranking[0].teamId, 't5');
   assert.equal(s.results.ranking[0].place, 1);
+  assert.ok(!JSON.stringify(s).includes('"by"'), 'results never say which player handed a card in');
 });
 
 await step('awards are computed', async () => {
@@ -456,6 +503,7 @@ await step('calendar invites download with public details only', async () => {
   assert.equal((ics.match(/BEGIN:VEVENT/g) || []).length, 5);
   assert.ok(ics.includes('DTSTART:20261003T053000Z'));
   assert.ok(!ics.includes('1 Westgate Dr'), 'full address must not be in invites');
+  assert.ok(ics.includes('https://traphouse-test.vercel.app/#/night/'), 'links use the public address');
   const one = await (await fetch(`${base}/api/calendar?night=n2`)).text();
   assert.equal((one.match(/BEGIN:VEVENT/g) || []).length, 1);
 });

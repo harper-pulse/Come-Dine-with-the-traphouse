@@ -122,7 +122,7 @@ export function PhotosView({ nightId }) {
       <strong>Photo uploads are switched off.</strong>
       <p class="small muted">The organiser can switch them on by creating a Blob store in the Vercel Storage tab and redeploying.</p>
     </div>`}
-    ${s.features.photos && !canUpload && html`<details class="panel"><summary style="cursor:pointer;font-weight:600">Log in to add photos</summary><div style="margin-top:12px"><${TeamLogin} compact /></div></details>`}
+    ${s.features.photos && !canUpload && html`<details class="panel"><summary style="cursor:pointer;font-weight:600">Tap your name to add photos</summary><div style="margin-top:12px"><${TeamLogin} compact /></div></details>`}
     ${canUpload && html`<${Uploader} defaultNight=${defaultNight} />`}
     ${groups.length === 0
       ? html`<div class="panel"><${Empty} icon="📸" title="No photos yet">Snap the starter before anyone eats it.<//></div>`

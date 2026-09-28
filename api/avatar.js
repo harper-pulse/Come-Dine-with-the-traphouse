@@ -104,11 +104,11 @@ export const POST = handle(async (request) => {
 
   if (action === 'generate') {
     const mode = aiMode();
-    if (mode === 'off') throw new HttpError(409, 'ai_off', 'AI portraits aren’t switched on here. You can still upload a finished portrait and use it as is.');
+    if (mode === 'off') throw new HttpError(409, 'ai_off', 'The portrait maker isn’t switched on. You can still use your photo as it is.');
     const limit = aiLimit();
     const used = Number(ctx.data.avatarUsage?.[ctx.teamId] || 0);
     if (!ctx.admin && used >= limit) {
-      throw new HttpError(429, 'no_goes', `Your team has used all ${limit} AI goes. Ask the organiser for more.`);
+      throw new HttpError(429, 'no_goes', `Your team has used all ${limit} goes. Ask the organiser for more.`);
     }
     const { buf, kind } = await readImage(request, MAX_UPLOAD);
     // Count the go up front so rapid taps can't dodge the cap; refunded on failure.
@@ -126,7 +126,7 @@ export const POST = handle(async (request) => {
       });
     } catch (err) {
       await pipeline([['HINCRBY', K.avatarUsage, ctx.teamId, -1]]);
-      throw new HttpError(502, 'ai_failed', err.friendly || 'The AI could not draw that one. Try again.');
+      throw new HttpError(502, 'ai_failed', err.friendly || 'That one didn’t work. Try again.');
     }
   }
 

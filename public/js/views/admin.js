@@ -13,6 +13,10 @@ import {
   setSpoilers,
   teamById,
   tz,
+  siteUrl,
+  joinLink,
+  loginMode,
+  memberName,
 } from '../store.js';
 import { request } from '../api.js';
 import { go } from '../router.js';
@@ -29,7 +33,7 @@ import {
   nightStatus,
   addDays,
 } from '../shared/core.js';
-import { fmtDay, fmtTime, fmtDayLong, copyText, shareText, joinLink, download, csvCell, memberNames } from '../util.js';
+import { fmtDay, fmtTime, fmtDayLong, copyText, shareText, download, csvCell, memberNames } from '../util.js';
 import { ProfileForm, HostForm } from './me.js';
 
 const TABS = [
@@ -140,7 +144,7 @@ function Setup({ auth }) {
           <input class="input code" inputmode="numeric" type="password" maxlength="8" value=${pin} onInput=${(e) => setPin(e.target.value.replace(/\D/g, ''))} /></label>
         ${!existingPin && html`<label class="field"><span class="label">PIN again</span>
           <input class="input code" inputmode="numeric" type="password" maxlength="8" value=${pin2} onInput=${(e) => setPin2(e.target.value.replace(/\D/g, ''))} /></label>
-          <p class="hint">Only you should know this. It unlocks team codes, dates and the Grand Reveal.</p>`}`}
+          <p class="hint">Only you should know this. It unlocks the control room: teams, dates and the Grand Reveal.</p>`}`}
       ${step === 2 && html`
         ${teams.map((t, i) => html`<fieldset key=${i} class="panel paper tight" style=${`margin:0;border-left:8px solid ${TEAM_COLORS[i % TEAM_COLORS.length]}`}>
           <legend class="sr-only">Team ${i + 1}</legend>
@@ -237,7 +241,7 @@ function SubmissionMatrix({ showTimes = false }) {
             if (n.hostTeamId === t.id) return html`<td key=${n.id} class="cell-host">HOST</td>`;
             const card = cards.find((c) => c.nightId === n.id && c.teamId === t.id);
             return html`<td key=${n.id} class="cell-guest">${card
-              ? html`<span style="color:var(--ok);font-weight:800">${a.spoilers && card.overall != null ? `${card.overall}` : '✓'}</span>${showTimes && html`<div class="tiny faint">${fmtDay(card.updatedAt, zone)}</div>`}`
+              ? html`<span style="color:var(--ok);font-weight:800">${a.spoilers && card.overall != null ? `${card.overall}` : '✓'}</span>${showTimes && html`<div class="tiny faint">${fmtDay(card.updatedAt, zone)}</div>`}${showTimes && card.by && html`<div class="tiny faint">${memberName(t.id, card.by)}</div>`}`
               : html`<span class="faint">·</span>`}</td>`;
           })}
         </tr>`)}
@@ -289,13 +293,13 @@ function Overview() {
     <section class="panel stack">
       <div class="panel-title">Launch checklist</div>
       <ol style="margin:0;padding-left:1.2em;line-height:1.8">
-        <li><a href="#/admin/teams">Check team names and send each team its invite link</a></li>
+        <li><a href="#/admin/teams">Check team names and send the invite to your group chat</a></li>
         <li><a href="#/admin/nights">Confirm dates, times and hosts</a></li>
         <li>Hosts add their theme, address and menu from their own team page</li>
         <li>On the night: guests score from their phones before they leave</li>
         <li><a href="#/admin/reveal">After the last dinner, run the Grand Reveal</a></li>
       </ol>
-      <p class="small muted">If you’re playing too, open your own team’s link on this phone. Organiser and team logins work side by side.</p>
+      <p class="small muted">If you’re playing too, tap your own name on the home page. Organiser and team logins work side by side.</p>
     </section>
   </div>`;
 }
@@ -338,9 +342,61 @@ function inviteText(team, code) {
     s.event.name,
     `You're ${team.name} (${memberNames(team)}).`,
     night ? `You host Night ${night.number}${night.startsAt ? ` on ${fmtDayLong(night.startsAt, zone)}` : ''}.` : '',
-    `Your secret team link (keep it in the team): ${joinLink(code)}`,
-    `Team code: ${code}`,
+    `Your team link (keep it in the team): ${joinLink(code)}`,
+    `Team code, if it asks: ${code}`,
   ].filter(Boolean).join('\n');
+}
+
+function TeamLinkRow({ team, code, link, onQr }) {
+  const a = useApp();
+  return html`<div class="row wrap">
+    <span class="code-box" aria-label="Team code">${code || '------'}</span>
+    <button class="btn sm" onClick=${async () => {
+      const r = await shareText({ title: a.state.event.name, text: inviteText(team, code) });
+      if (r === 'copied') toast('Invite copied. Paste it into the chat.', 'ok');
+    }}><${Icon} name="share" size="18" />Send team invite</button>
+    <button class="btn sm dark" onClick=${async () => (await copyText(link)) && toast('Link copied.', 'ok')}><${Icon} name="copy" size="18" />Copy link</button>
+    <button class="btn sm dark" onClick=${onQr}><${Icon} name="qr" size="18" />QR</button>
+  </div>`;
+}
+
+// One message for the whole group chat: open the link, tap your name.
+function GroupInvite() {
+  const a = useApp();
+  const [qr, setQr] = useState(false);
+  const url = siteUrl();
+  const codes = loginMode() === 'code';
+  const text = [
+    a.state.event.name,
+    `Here's the portal for our dinners: ${url}`,
+    codes
+      ? 'Open it and tap your name. Your team code is in a separate message.'
+      : 'Open it and tap your name. It has the rotation, the addresses and the scorecards.',
+  ].join('\n');
+  return html`<div class="panel stack">
+    <div class="panel-title">Invite everyone</div>
+    <p class="small">${codes
+      ? 'Team codes are switched on in Settings. Send this to the group, then send each team its code from the team cards below.'
+      : 'One message for the group chat. Everyone opens the link and taps their name. No codes and no passwords.'}</p>
+    <pre class="invite-preview">${text}</pre>
+    <div class="row wrap">
+      <button class="btn sm" onClick=${async () => {
+        const r = await shareText({ title: a.state.event.name, text });
+        if (r === 'copied') toast('Invite copied. Paste it into the group chat.', 'ok');
+      }}><${Icon} name="share" size="18" />Send to the group chat</button>
+      <button class="btn sm dark" onClick=${async () => (await copyText(url)) && toast('Link copied.', 'ok')}><${Icon} name="copy" size="18" />Copy link</button>
+      <button class="btn sm dark" onClick=${() => setQr(true)}><${Icon} name="qr" size="18" />QR code</button>
+    </div>
+    <p class="small muted">If anyone gets a Vercel login screen, open the project in Vercel, go to Settings, then Deployment Protection, and switch off Vercel Authentication.</p>
+    <${Sheet} open=${qr} onClose=${() => setQr(false)} label="QR code">
+      <div class="stack center">
+        <div class="panel-title">Scan to open the portal</div>
+        <p class="small muted">Point a phone camera at it, then tap your name.</p>
+        <${QrCode} text=${url} />
+        <button class="btn dark block" onClick=${() => setQr(false)}>Done</button>
+      </div>
+    <//>
+  </div>`;
 }
 
 function TeamAdmin({ team, code }) {
@@ -355,15 +411,13 @@ function TeamAdmin({ team, code }) {
       <div class="row"><${TeamBadge} team=${full} size=${46} /><div><div class="panel-title" style="margin:0">${full.name}</div><div class="small muted">${memberNames(full)}</div></div></div>
       <button class="btn sm dark" onClick=${() => setEdit(!edit)}><${Icon} name="edit" size="18" />${edit ? 'Close' : 'Edit'}</button>
     </div>
-    <div class="row wrap">
-      <span class="code-box" aria-label="Team code">${code || '------'}</span>
-      <button class="btn sm" onClick=${async () => {
-        const r = await shareText({ title: a.state.event.name, text: inviteText(full, code) });
-        if (r === 'copied') toast('Invite copied. Paste it into the chat.', 'ok');
-      }}><${Icon} name="share" size="18" />Send invite</button>
-      <button class="btn sm dark" onClick=${async () => (await copyText(link)) && toast('Link copied.', 'ok')}><${Icon} name="copy" size="18" />Copy link</button>
-      <button class="btn sm dark" onClick=${() => setQr(true)}><${Icon} name="qr" size="18" />QR</button>
-    </div>
+    ${loginMode() === 'code'
+      ? html`<${TeamLinkRow} team=${full} code=${code} link=${link} onQr=${() => setQr(true)} />`
+      : html`<details class="team-link">
+          <summary>Private team link and code</summary>
+          <p class="small muted">Not needed while everyone logs in by tapping their name. The link logs a phone straight in for this team.</p>
+          <${TeamLinkRow} team=${full} code=${code} link=${link} onQr=${() => setQr(true)} />
+        </details>`}
     ${edit && html`<div class="stack">
       <div>
         <span class="label">Team colour</span>
@@ -400,13 +454,10 @@ function TeamsTab() {
   const codes = a.admin.codes;
   const all = a.state.teams.map((t) => inviteText(t, codes[t.id])).join('\n\n');
   return html`<div class="stack-lg">
-    <div class="panel stack">
-      <div class="panel-title">Invites</div>
-      <p class="small">Send each team its own link. Tapping it logs their phones in as that team. Codes are the backup if a link gets lost.</p>
-      <div class="row wrap">
-        <button class="btn sm" onClick=${async () => (await copyText(all)) && toast('All invites copied.', 'ok')}><${Icon} name="copy" size="18" />Copy all invites</button>
-        ${a.state.teams.length < 8 && html`<button class="btn sm dark" disabled=${busy === 'add'} onClick=${() => run('add', () => adminAction({ action: 'addTeam' }), 'Team added, with its own night.')}><${Icon} name="plus" size="18" />Add a team</button>`}
-      </div>
+    <${GroupInvite} />
+    <div class="row wrap">
+      ${loginMode() === 'code' && html`<button class="btn sm dark" onClick=${async () => (await copyText(all)) && toast('All team invites copied.', 'ok')}><${Icon} name="copy" size="18" />Copy all team invites</button>`}
+      ${a.state.teams.length < 8 && html`<button class="btn sm dark" disabled=${busy === 'add'} onClick=${() => run('add', () => adminAction({ action: 'addTeam' }), 'Team added, with its own night.')}><${Icon} name="plus" size="18" />Add a team</button>`}
     </div>
     ${a.state.teams.map((t) => html`<${TeamAdmin} key=${t.id} team=${t} code=${codes[t.id]} />`)}
   </div>`;
@@ -626,7 +677,7 @@ function SettingsTab() {
   const a = useApp();
   const ev = a.admin.config.event;
   const [busy, run] = useAsync();
-  const [form, setForm] = useState({ name: ev.name, tagline: ev.tagline, prize: ev.prize, timezone: ev.timezone, revealMode: ev.revealMode, rules: (ev.rules || []).join('\n') });
+  const [form, setForm] = useState({ name: ev.name, tagline: ev.tagline, prize: ev.prize, timezone: ev.timezone, revealMode: ev.revealMode, login: ev.login === 'code' ? 'code' : 'names', rules: (ev.rules || []).join('\n') });
   const [cats, setCats] = useState(a.admin.config.categories.map((c) => ({ ...c })));
   const [pin, setPin] = useState('');
   const [confirmText, setConfirmText] = useState('');
@@ -662,6 +713,16 @@ function SettingsTab() {
       <label class="field"><span class="label">Tagline</span><input class="input" maxlength="90" value=${form.tagline} onInput=${(e) => set({ tagline: e.target.value })} /></label>
       <label class="field"><span class="label">Prize</span><input class="input" maxlength="90" value=${form.prize} onInput=${(e) => set({ prize: e.target.value })} placeholder="The Golden Spatula and $200 bar tab" /></label>
       <label class="field"><span class="label">Time zone</span><input class="input" value=${form.timezone} onInput=${(e) => set({ timezone: e.target.value })} /></label>
+      <div>
+        <span class="label">How do people log in?</span>
+        <div class="seg" role="group">
+          <button type="button" aria-pressed=${form.login !== 'code'} onClick=${() => set({ login: 'names' })}>Tap their name</button>
+          <button type="button" aria-pressed=${form.login === 'code'} onClick=${() => set({ login: 'code' })}>Name and team code</button>
+        </div>
+        <p class="hint">${form.login === 'code'
+          ? 'Safer. After tapping their name, people type their team’s 6 letter code. Phones already logged in stay in until you make a new code for that team.'
+          : 'Easiest. Anyone with the link can tap any name, so keep the link in your group chat. If someone mucks around, switch to team codes.'}</p>
+      </div>
       <div>
         <span class="label">When do scores come out?</span>
         <div class="seg" role="group">

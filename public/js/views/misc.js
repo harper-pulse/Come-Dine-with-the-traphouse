@@ -51,7 +51,7 @@ export function NotSetUp() {
       </div>
       <div class="panel tone-purple halftone stack center">
         <${FireText} tag="h1" text="Opening soon" style="font-size:2.6rem" />
-        <p>The organiser hasn't set the portal up yet. Check back once they've sent your team link.</p>
+        <p>The organiser hasn't set the portal up yet. Check back once they've sent the link to the group.</p>
         <a class="btn" href="#/admin">I'm the organiser</a>
       </div>
     </div>

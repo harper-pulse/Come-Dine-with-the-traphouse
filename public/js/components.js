@@ -1,6 +1,6 @@
 // Shared UI pieces.
 import { html, useEffect, useState, useRef } from './lib.js';
-import { app, useApp, teamById, loginTeam } from './store.js';
+import { app, useApp, teamById, pickMember, loginMode } from './store.js';
 import { useFx, closeOverlay, sound, toast } from './fx.js';
 import { initials, memberNames, fmtDay, fmtTime, isToday } from './util.js';
 import { nightStatus, MAX_STARS } from './shared/core.js';
@@ -306,40 +306,68 @@ export function OverlayLayer() {
 /* Team login                                                          */
 /* ------------------------------------------------------------------ */
 
-export function TeamLogin({ onDone, compact = false }) {
+// "Who's this?" Everyone logs in by tapping their own name, and the phone
+// remembers them. If the organiser switches team codes on, tapping a name
+// asks for that team's code as well.
+export function TeamLogin({ onDone, compact = false, title = 'Who’s this?' }) {
+  const a = useApp();
+  const teams = a.state?.teams || [];
+  const needCode = loginMode() === 'code';
+  const [picked, setPicked] = useState(null); // { teamId, memberId }
   const [code, setCode] = useState('');
-  const [busy, setBusy] = useState(false);
+  const [busy, setBusy] = useState('');
   const [error, setError] = useState('');
-  const submit = async (e) => {
-    e.preventDefault();
-    if (!code.trim()) return;
-    setBusy(true);
+
+  const go = async (teamId, memberId, withCode) => {
+    setBusy(memberId);
     setError('');
     try {
-      const r = await loginTeam(code);
-      const team = teamById(r.teamId);
+      await pickMember({ teamId, memberId, code: withCode });
+      const person = teamById(teamId)?.members.find((m) => m.id === memberId);
       sound.play('pop');
-      toast(`You're in, ${team?.name || 'team'}.`, 'ok');
-      onDone?.(r.teamId);
+      toast(`You're in, ${person?.name || 'legend'}.`, 'ok');
+      onDone?.(teamId);
     } catch (err) {
       setError(err.message);
     } finally {
-      setBusy(false);
+      setBusy('');
     }
   };
-  return html`<form onSubmit=${submit} class="stack">
+
+  const tap = (teamId, memberId) => {
+    if (!needCode) return go(teamId, memberId);
+    setPicked({ teamId, memberId });
+    setCode('');
+    setError('');
+  };
+
+  return html`<div class="stack">
     ${!compact && html`<div>
-      <div class="panel-title">Team login</div>
-      <p class="muted small">Your organiser sent each team a secret link or a 6 letter code. Use the link, or type the code here.</p>
+      <div class="panel-title">${title}</div>
+      <p class="small muted">${needCode ? 'Tap your name, then type your team code.' : 'Tap your name. This phone will remember you.'}</p>
     </div>`}
-    <label class="field">
-      <span class="label">Team code</span>
-      <input class="input code" value=${code} onInput=${(e) => setCode(e.target.value.toUpperCase())}
-        maxlength="12" autocomplete="one-time-code" autocapitalize="characters" spellcheck="false" placeholder="ABC123" />
-    </label>
-    ${error && html`<p class="error-text" role="alert">${error}</p>`}
-    <button class="btn block" disabled=${busy}>${busy ? 'Checking…' : "Let's go"}</button>
-  </form>`;
+    <div class="who-teams">
+      ${teams.map((t) => html`<div class="who-team" key=${t.id} style=${`--team:${t.color}`}>
+        <div class="who-team-name">${t.name}</div>
+        <div class="who-people">
+          ${t.members.map((m, i) => html`<button type="button" key=${m.id} class="who-person"
+            aria-pressed=${picked?.memberId === m.id} disabled=${Boolean(busy)} onClick=${() => tap(t.id, m.id)}>
+            <${Avatar} member=${m} team=${t} size=${34} /><span>${busy === m.id ? 'One sec…' : m.name || `Player ${i + 1}`}</span>
+          </button>`)}
+        </div>
+        ${needCode && picked?.teamId === t.id && html`<form class="who-code" onSubmit=${(e) => {
+          e.preventDefault();
+          if (code.trim()) go(t.id, picked.memberId, code);
+        }}>
+          <input class="input code" value=${code} onInput=${(e) => setCode(e.target.value.toUpperCase())} aria-label="Team code"
+            maxlength="12" autocomplete="one-time-code" autocapitalize="characters" spellcheck="false" placeholder="Team code" autofocus />
+          <button class="btn" disabled=${Boolean(busy)}>Go</button>
+        </form>`}
+        ${error && picked?.teamId === t.id && html`<p class="error-text" role="alert">${error}</p>`}
+      </div>`)}
+    </div>
+    ${error && !picked && html`<p class="error-text" role="alert">${error}</p>`}
+  </div>`;
 }
 
 export function NeedTeam({ children }) {

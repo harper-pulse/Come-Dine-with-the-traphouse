@@ -244,7 +244,7 @@ export function ScoreView({ nightId }) {
   const a = useApp();
   if (!a.team) {
     return html`<div class="page narrow stack-lg">
-      <${PageTitle} kicker="Scorecards" title="Score a dinner">Log in with your team code first. It's in the message from your organiser.<//>
+      <${PageTitle} kicker="Scorecards" title="Score a dinner">First, tap your name so we know which team is scoring.<//>
       <div class="panel paper"><${TeamLogin} compact /></div>
     </div>`;
   }

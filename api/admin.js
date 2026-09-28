@@ -46,7 +46,7 @@ function adminView(data, { spoilers }) {
   const teams = config.teams.map((t) => mergeTeam(t, data.profiles[t.id], { includePrivate: true }));
   const hostinfo = Object.fromEntries(config.nights.map((n) => [n.id, hostInfoFull(data.hostinfo[n.id])]));
   const cards = cardList(data.cards).map((c) =>
-    spoilers ? c : { nightId: c.nightId, teamId: c.teamId, submittedAt: c.submittedAt, updatedAt: c.updatedAt },
+    spoilers ? c : { nightId: c.nightId, teamId: c.teamId, by: c.by || null, submittedAt: c.submittedAt, updatedAt: c.updatedAt },
   );
   const show = data.reveal?.show || { status: 'idle' };
   return {
@@ -121,6 +121,7 @@ export const POST = handle(async (request) => {
         prize: str(body.prize ?? e.prize, 90),
         timezone,
         revealMode: body.revealMode === 'nightly' ? 'nightly' : body.revealMode === 'final' ? 'final' : e.revealMode,
+        login: body.login === 'code' || body.login === 'names' ? body.login : e.login || 'names',
         rules,
       };
       commands.push(saveConfig(config));

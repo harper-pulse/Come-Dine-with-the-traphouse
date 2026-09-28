@@ -1,6 +1,6 @@
 // My team: profile, avatars, dietary needs, and the hosting editor.
 import { html, useState, useEffect } from '../lib.js';
-import { useApp, teamById, hostNightOf, tz, myTeamId, teamAction, logoutTeam } from '../store.js';
+import { useApp, teamById, hostNightOf, tz, myTeamId, teamAction, logoutTeam, me } from '../store.js';
 import { FireText, PageTitle, TeamLogin, Avatar, TeamBadge, Icon } from '../components.js';
 import { PortraitsSection } from '../portraits.js';
 import { toast, sound } from '../fx.js';
@@ -110,7 +110,7 @@ export function MeView() {
   const [saving, setSaving] = useState('');
   if (!a.team) {
     return html`<div class="page narrow stack-lg">
-      <${PageTitle} kicker="My team" title="Team login">Your organiser sent each team a secret link. Tap it to log in, or type your team code below.<//>
+      <${PageTitle} kicker="My team" title="Who’s this?">Tap your name. This phone will remember you.<//>
       <div class="panel paper"><${TeamLogin} compact onDone=${() => window.scrollTo(0, 0)} /></div>
     </div>`;
   }
@@ -174,9 +174,9 @@ export function MeView() {
 
     <section class="panel stack">
       <div class="panel-title">This phone</div>
-      <p class="small muted">Logged in as ${team.name}. Anyone with your team link can log in as your team, so keep it in the family.</p>
+      <p class="small muted">${me() ? `Logged in as ${me().name}, ${team.name}.` : `Logged in as ${team.name}.`} Not you? Log out, then tap your own name.</p>
       <button class="btn dark" onClick=${() => {
-        if (confirm('Log this phone out of your team?')) logoutTeam();
+        if (confirm('Log this phone out?')) logoutTeam();
       }}><${Icon} name="logout" />Log out</button>
     </section>
   </div>`;

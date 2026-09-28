@@ -182,14 +182,6 @@ export async function compressPhoto(file) {
   return { ...full, thumb: thumb.blob };
 }
 
-export function siteUrl() {
-  return `${location.origin}${location.pathname}`;
-}
-
-export function joinLink(code) {
-  return `${siteUrl()}#/join/${code}`;
-}
-
 export function csvCell(v) {
   const s = v == null ? '' : String(v);
   return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;

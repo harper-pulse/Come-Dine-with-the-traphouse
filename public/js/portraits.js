@@ -152,7 +152,7 @@ function Studio({ open, onClose, target, label, kind, teamId, ai, photo }) {
       </div>
 
       ${step === 'working' && html`<${LoadingScreen} tipIndex=${tip} progress=${progress} />
-        <p class="small muted center">Nano Banana is drawing ${kind === 'duo' ? 'you both' : label}. Usually 20 to 60 seconds.</p>`}
+        <p class="small muted center">Drawing ${kind === 'duo' ? 'you both' : label}. This usually takes 20 to 60 seconds.</p>`}
 
       ${step === 'choose' && html`
         <div class="studio-compare">
@@ -164,13 +164,13 @@ function Studio({ open, onClose, target, label, kind, teamId, ai, photo }) {
               Make ${kind === 'duo' ? 'us' : 'me'} GTA
             </button>
             <p class="hint center">${teamId
-              ? 'Nano Banana redraws the photo in the poster’s style. Organiser goes are unlimited.'
+              ? 'Redraws the photo in the poster’s style. Organiser goes are unlimited.'
               : noGoes
-                ? 'Your team has used all its AI goes. Ask the organiser for more.'
-                : `Nano Banana redraws the photo in the poster’s style. ${left} AI ${left === 1 ? 'go' : 'goes'} left for your team.`}</p>`
-          : html`<p class="hint">AI portraits aren’t switched on for this portal yet. If this is already a finished portrait (say, one made in the Gemini app), you can use it as is.</p>`}
-        ${aiOn && html`<p class="hint center" style="margin-bottom:-6px">If you made it yourself, say in the Gemini app, you can use it as is.</p>`}
-        <button class=${`btn block ${aiOn ? 'dark' : 'lg'}`} onClick=${useAsIs}>Use as is</button>`}
+                ? 'Your team has used all its goes. Ask the organiser for more.'
+                : `Redraws the photo in the poster’s style. ${left} ${left === 1 ? 'go' : 'goes'} left for your team.`}</p>`
+          : html`<p class="hint">The portrait maker isn’t switched on yet. You can still use this photo as it is.</p>`}
+        ${aiOn && html`<p class="hint center" style="margin-bottom:-6px">Already a GTA-style picture? Use it as it is.</p>`}
+        <button class=${`btn block ${aiOn ? 'dark' : 'lg'}`} onClick=${useAsIs}>Use this photo as it is</button>`}
 
       ${(step === 'result' || step === 'saving') && result && html`
         <div class="studio-result">
@@ -236,9 +236,9 @@ export function PortraitsSection({ team, ai, teamId }) {
       <div class="panel-title" style="margin-bottom:4px">GTA portraits</div>
       <p class="small muted">
         ${aiOn
-          ? 'Upload a photo and Nano Banana (Google’s image AI, the one the poster was made with) redraws it in the poster’s GTA style. Do one of you both for the team, and one each for your player icons.'
-          : 'Upload a finished GTA-style portrait (for example one made in the Gemini app): one of you both for the team, and one each for your player icons.'}${' '}
-        ${aiOn ? 'If you already made one yourself in Gemini, upload it and pick “Use as is”. ' : ''}Original photos are never stored.
+          ? 'Upload a photo and it gets redrawn in the poster’s GTA style. Do one of you both for the team, and one each for your player icons.'
+          : 'Upload a GTA-style picture: one of you both for the team, and one each for your player icons.'}${' '}
+        Your original photos aren’t kept.
       </p>
     </div>
     <div class="portrait-grid">
