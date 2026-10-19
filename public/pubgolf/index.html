@@ -1,0 +1,907 @@
+<!doctype html>
+<html lang="en-NZ">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#120d18">
+<meta property="og:title" content="Hallow Pub Golf">
+<meta property="og:description" content="8 holes down the CRL on Halloween, finishing at the Good Home Mt Eden. Tee off 2:30pm, Saturday 31 October.">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}[hidden]{display:none!important}img{max-width:100%}</style>
+<title>Hallow Pub Golf</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Halloween pub golf for a surprise birthday. 8 holes along Auckland's City Rail Link, timed to the happy hours, finishing at the Good Home Mt Eden.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Creepster&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=DM+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one column "course guide", a night-time scorecard. Single dark look on purpose (it's a night out on Halloween). */
+:root {
+  --night: #120d18;
+  --panel: #1c1524;
+  --panel-2: #251c30;
+  --line: #3b2f49;
+  --bone: #f1e8d8;
+  --muted: #a99db8;
+  --pumpkin: #ff7a1a;
+  --pumpkin-ink: #1a0d02;
+  --blood: #e2445c;
+  --go: #7fcf8a;
+  --wait: #e8c25a;
+  --rail: #c9a7ff;
+  --f-display: 'Creepster', 'Impact', 'Arial Black', sans-serif;
+  --f-body: 'Bricolage Grotesque', 'Segoe UI', system-ui, sans-serif;
+  --f-mono: 'DM Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  --r: 14px;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--night);
+  color: var(--bone);
+  font: 16px/1.55 var(--f-body);
+  background-image:
+    radial-gradient(1200px 500px at 85% -10%, rgba(255,122,26,.16), transparent 60%),
+    radial-gradient(800px 400px at -10% 20%, rgba(201,167,255,.08), transparent 60%);
+  background-attachment: fixed;
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--night); }
+.wrap {
+  max-width: 880px;
+  margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+a { color: var(--pumpkin); }
+a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid var(--pumpkin); outline-offset: 2px; }
+h1, h2, h3 { text-wrap: balance; margin: 0; line-height: 1.1; }
+h2 { font-size: clamp(1.5rem, 4vw, 2rem); font-weight: 800; letter-spacing: -.01em; }
+h3 { font-size: 1.15rem; font-weight: 800; }
+p { margin: 0; }
+.eyebrow { font: 500 .75rem/1 var(--f-mono); text-transform: uppercase; letter-spacing: .14em; color: var(--muted); }
+.muted { color: var(--muted); }
+.mono { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+section { padding-block: 40px 0; display: grid; gap: 18px; }
+.lead { max-width: 62ch; color: var(--muted); }
+
+/* nav */
+nav.jump {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+  background: rgba(18,13,24,.92); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+  margin-left: calc(-1 * max(16px, env(safe-area-inset-left, 0px)));
+  margin-right: calc(-1 * max(16px, env(safe-area-inset-right, 0px)));
+  padding: 10px max(16px, env(safe-area-inset-right, 0px)) 10px max(16px, env(safe-area-inset-left, 0px));
+  display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none;
+}
+nav.jump::-webkit-scrollbar { display: none; }
+nav.jump a {
+  flex: none; text-decoration: none; color: var(--bone); font-weight: 600; font-size: .9rem;
+  padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line);
+}
+nav.jump a:hover { border-color: var(--pumpkin); }
+
+/* hero */
+header.hero { padding-block: 40px 8px; display: grid; gap: 18px; }
+.hero h1 {
+  font-family: var(--f-display); font-weight: 400;
+  font-size: clamp(3.2rem, 13vw, 6.6rem); line-height: .9; color: var(--pumpkin);
+  text-shadow: 0 0 30px rgba(255,122,26,.35);
+}
+.hero h1 span { display: block; color: var(--bone); text-shadow: none; }
+.hero .sub { font-size: 1.15rem; max-width: 56ch; }
+.facts { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  font: 500 .8rem/1 var(--f-mono); padding: 7px 10px; border-radius: 999px;
+  background: var(--panel); border: 1px solid var(--line); color: var(--bone); white-space: nowrap;
+}
+.chip.hh-on { color: var(--go); border-color: rgba(127,207,138,.45); }
+.chip.hh-soon { color: var(--wait); border-color: rgba(232,194,90,.45); }
+.chip.hh-off { color: var(--muted); }
+.chip.warn { color: var(--wait); border-color: rgba(232,194,90,.45); }
+.dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+
+.status {
+  border: 1px solid var(--pumpkin); border-radius: var(--r); padding: 18px;
+  background: linear-gradient(135deg, rgba(255,122,26,.14), rgba(255,122,26,.03));
+  display: grid; gap: 10px;
+}
+.count { display: flex; gap: 10px; flex-wrap: wrap; }
+.count div { min-width: 64px; }
+.count b { display: block; font: 500 clamp(1.8rem, 7vw, 2.6rem)/1 var(--f-mono); font-variant-numeric: tabular-nums; color: var(--pumpkin); }
+.count small { font: .72rem var(--f-mono); text-transform: uppercase; letter-spacing: .12em; color: var(--muted); }
+.bday { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.bday label { font-size: .9rem; color: var(--muted); }
+input[type=text], input[type=number] {
+  font: inherit; color: var(--bone); background: var(--panel); border: 1px solid var(--line);
+  border-radius: 10px; padding: 8px 10px; min-width: 0;
+}
+button {
+  font: 600 .95rem/1 var(--f-body); cursor: pointer; border-radius: 10px; padding: 10px 14px;
+  border: 1px solid var(--line); background: var(--panel-2); color: var(--bone);
+}
+button.primary { background: var(--pumpkin); color: var(--pumpkin-ink); border-color: var(--pumpkin); }
+button:hover { border-color: var(--pumpkin); }
+
+/* map */
+.mapbox { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 12px; overflow-x: auto; }
+.mapbox svg { display: block; width: 100%; min-width: 320px; height: auto; }
+.mapbox text { font-family: var(--f-body); }
+
+/* timeline */
+.tl { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 14px; overflow-x: auto; }
+.tl-inner { min-width: 560px; display: grid; gap: 8px; }
+.tl-row { display: grid; grid-template-columns: 130px 1fr; gap: 10px; align-items: center; }
+.tl-name { font-size: .85rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tl-track { position: relative; height: 26px; background: repeating-linear-gradient(90deg, transparent 0 calc(12.5% - 1px), var(--line) calc(12.5% - 1px) 12.5%); border-radius: 6px; }
+.tl-hh { position: absolute; top: 3px; bottom: 3px; background: rgba(127,207,138,.22); border: 1px solid rgba(127,207,138,.55); border-radius: 5px; }
+.tl-hh.unsure { background: rgba(232,194,90,.14); border-style: dashed; border-color: rgba(232,194,90,.6); }
+.tl-us { position: absolute; top: 8px; bottom: 8px; background: var(--pumpkin); border-radius: 4px; }
+.tl-axis { display: grid; grid-template-columns: 130px 1fr; gap: 10px; }
+.tl-ticks { position: relative; height: 16px; font: .72rem var(--f-mono); color: var(--muted); }
+.tl-ticks span { position: absolute; transform: translateX(-50%); }
+.tl-ticks span:first-child { transform: none; }
+.tl-ticks span:last-child { transform: translateX(-100%); }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: .82rem; color: var(--muted); }
+.legend i { display: inline-block; width: 16px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+
+/* holes */
+.holes { display: grid; gap: 14px; }
+.hole {
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--r);
+  display: grid; grid-template-columns: 74px 1fr; overflow: hidden;
+}
+.hole.now { border-color: var(--pumpkin); box-shadow: 0 0 0 1px var(--pumpkin), 0 10px 40px rgba(255,122,26,.18); }
+.hole.done { opacity: .62; }
+.flag {
+  background: var(--panel-2); border-right: 1px dashed var(--line);
+  display: grid; align-content: start; justify-items: center; gap: 4px; padding: 16px 6px;
+}
+.flag .no { font: 400 2.6rem/1 var(--f-display); color: var(--pumpkin); }
+.flag .par { font: 500 .72rem/1.2 var(--f-mono); text-transform: uppercase; letter-spacing: .1em; color: var(--muted); text-align: center; }
+.flag .par b { display: block; color: var(--bone); font-size: 1.3rem; letter-spacing: 0; }
+.hole-body { padding: 16px; display: grid; gap: 10px; min-width: 0; }
+.hole-top { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 12px; align-items: baseline; }
+.hole-name { font-family: var(--f-display); font-weight: 400; color: var(--pumpkin); font-size: 1.05rem; letter-spacing: .03em; }
+.time { font: 500 .9rem var(--f-mono); color: var(--bone); }
+.hole h3 a { color: inherit; text-decoration: none; }
+.hole h3 a:hover { text-decoration: underline; text-decoration-color: var(--pumpkin); }
+.addr { font-size: .9rem; color: var(--muted); }
+.deal { font-size: .95rem; }
+.deal b { color: var(--go); }
+.kv { display: grid; grid-template-columns: max-content 1fr; gap: 4px 12px; font-size: .9rem; }
+.kv dt { color: var(--muted); }
+.kv dd { margin: 0; min-width: 0; }
+.leg {
+  font-size: .88rem; color: var(--muted); border-top: 1px dashed var(--line); padding-top: 10px;
+  display: flex; gap: 8px; align-items: flex-start;
+}
+.leg.rail { color: var(--rail); }
+.leg svg { flex: none; margin-top: 2px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+
+/* rules */
+.rules { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 14px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 16px; display: grid; gap: 10px; align-content: start; }
+.card ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; }
+.pen { list-style: none; padding: 0 !important; }
+.pen li { display: flex; justify-content: space-between; gap: 10px; border-bottom: 1px dashed var(--line); padding-bottom: 6px; }
+.pen li:last-child { border-bottom: 0; }
+.pen b { font-family: var(--f-mono); white-space: nowrap; }
+.pen .bad { color: var(--blood); }
+.pen .good { color: var(--go); }
+
+/* trick or treat */
+.tot { display: grid; gap: 14px; grid-template-columns: 1fr; }
+.tot-card {
+  border-radius: var(--r); border: 2px solid var(--pumpkin); padding: 22px; min-height: 150px;
+  display: grid; gap: 8px; align-content: center; text-align: center;
+  background: radial-gradient(circle at 50% 0%, rgba(255,122,26,.18), transparent 70%), var(--panel);
+}
+.tot-card .kind { font: 400 2rem/1 var(--f-display); color: var(--pumpkin); }
+.tot-card.trick .kind { color: var(--blood); }
+.tot-card.treat .kind { color: var(--go); }
+.tot-card p { font-size: 1.05rem; max-width: 46ch; margin: 0 auto; }
+@media (prefers-reduced-motion: no-preference) {
+  .tot-card.flip { animation: flip .45s ease; }
+  @keyframes flip { from { transform: rotateY(90deg); opacity: .2; } to { transform: none; opacity: 1; } }
+}
+
+/* scorecard */
+.sc-tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.sc-tools input { flex: 1 1 160px; }
+.sc-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--r); background: var(--panel); }
+table.sc { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+.sc th, .sc td { border-bottom: 1px solid var(--line); padding: 6px; text-align: center; }
+.sc thead th { font: 500 .72rem var(--f-mono); text-transform: uppercase; letter-spacing: .08em; color: var(--muted); background: var(--panel-2); position: sticky; top: 0; }
+.sc th.p { text-align: left; min-width: 130px; position: sticky; left: 0; background: var(--panel); z-index: 1; }
+.sc thead th.p { background: var(--panel-2); z-index: 2; }
+.sc .pname { display: flex; align-items: center; gap: 6px; }
+.sc .pname input { width: 100%; min-width: 90px; padding: 6px 8px; font-weight: 600; }
+.sc .rm { padding: 6px 8px; background: transparent; color: var(--muted); border-color: transparent; }
+.sc .rm:hover { color: var(--blood); }
+.sc td input { width: 46px; text-align: center; padding: 6px 2px; font-family: var(--f-mono); }
+.sc td.tot { font: 500 1rem var(--f-mono); }
+.sc tr.parrow td, .sc tr.parrow th { color: var(--muted); font-family: var(--f-mono); font-size: .85rem; }
+.under { color: var(--go); } .over { color: var(--blood); }
+.board { display: grid; gap: 8px; }
+.board .row { display: grid; grid-template-columns: 34px 1fr auto auto; gap: 10px; align-items: center; padding: 10px 14px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; }
+.board .row:first-child { border-color: var(--pumpkin); }
+.board .pos { font: 400 1.4rem/1 var(--f-display); color: var(--pumpkin); }
+.board .nm { font-weight: 700; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.note { font-size: .85rem; color: var(--muted); }
+.toast { min-height: 1.2em; font-size: .85rem; color: var(--go); }
+
+/* budget */
+.budget { overflow-x: auto; }
+table.money { border-collapse: collapse; width: 100%; font-size: .92rem; }
+.money th, .money td { padding: 8px 10px; border-bottom: 1px solid var(--line); text-align: left; }
+.money th { font: 500 .72rem var(--f-mono); text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+.money td.n { text-align: right; font-family: var(--f-mono); white-space: nowrap; }
+.money tfoot td { font-weight: 800; border-bottom: 0; }
+.money tfoot td.n { color: var(--pumpkin); font-size: 1.1rem; }
+
+footer { padding-block: 48px 0; color: var(--muted); font-size: .85rem; display: grid; gap: 8px; }
+
+@media (max-width: 520px) {
+  .hole { grid-template-columns: 58px 1fr; }
+  .flag .no { font-size: 2.1rem; }
+  .hole-body { padding: 14px 12px; }
+  .kv { grid-template-columns: 1fr; gap: 0; }
+  .kv dt { margin-top: 6px; }
+}
+@media (min-width: 720px) { .tot { grid-template-columns: 1.3fr 1fr; align-items: center; } }
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <header class="hero" id="top">
+    <p class="eyebrow">Saturday 31 October 2026 · Tee off 2:30pm · Dress code: Halloween</p>
+    <h1>Hallow<span>Pub Golf</span></h1>
+    <p class="sub">Eight holes along the brand new City Rail Link, from the Viaduct to the Good Home Mt Eden, timed so we land in each bar during happy hour. A surprise for <strong id="bdayName">the Birthday Legend</strong>, so keep this link out of their sight.</p>
+    <div class="facts">
+      <span class="chip">8 holes</span>
+      <span class="chip">Par <span id="parTotal">23</span></span>
+      <span class="chip">2 CRL train rides</span>
+      <span class="chip">≈ $<span id="costChip">90</span> each</span>
+      <span class="chip">Finish ≈ 9pm, Mt Eden</span>
+    </div>
+    <div class="status" id="status" aria-live="polite"></div>
+    <div class="bday">
+      <label for="bdayInput">Birthday legend's name</label>
+      <input type="text" id="bdayInput" placeholder="e.g. Sam" maxlength="30">
+    </div>
+  </header>
+
+  <nav class="jump" aria-label="Sections">
+    <a href="#course">Course</a>
+    <a href="#holes">Holes</a>
+    <a href="#rules">Rules</a>
+    <a href="#trick">Trick or Treat</a>
+    <a href="#card">Scorecard</a>
+    <a href="#budget">Budget</a>
+    <a href="#prep">Before the day</a>
+  </nav>
+
+  <section id="course">
+    <p class="eyebrow">The course</p>
+    <h2>Down the CRL, one bar at a time</h2>
+    <p class="lead">Holes 1 to 3 are in the city centre. We catch the CRL from Te Waihorotiu to Karanga-a-Hape for holes 4 to 7 on K Road, then ride one more stop to Maungawhau for the final hole at the Good Home. Trains every 10 minutes or so, a couple of dollars on HOP or a tap of your card.</p>
+    <div class="mapbox" id="map"></div>
+  </section>
+
+  <section id="hh">
+    <p class="eyebrow">Why this order</p>
+    <h2>Happy hour vs. our tee times</h2>
+    <p class="lead">Green is each bar's Saturday happy hour, orange is when we're there. The order is built so the orange sits inside the green wherever a deal exists.</p>
+    <div class="tl"><div class="tl-inner" id="timeline"></div></div>
+    <div class="legend">
+      <span><i style="background:rgba(127,207,138,.3);border:1px solid rgba(127,207,138,.6)"></i>Happy hour (listed)</span>
+      <span><i style="background:rgba(232,194,90,.14);border:1px dashed rgba(232,194,90,.7)"></i>Deal unconfirmed, call ahead</span>
+      <span><i style="background:var(--pumpkin)"></i>Our slot</span>
+    </div>
+  </section>
+
+  <section id="holes">
+    <p class="eyebrow">The holes</p>
+    <h2>Eight holes, eight drinks</h2>
+    <div class="holes" id="holeList"></div>
+  </section>
+
+  <section id="rules">
+    <p class="eyebrow">Rules of the course</p>
+    <h2>How pub golf works</h2>
+    <p class="lead">Each bar is a hole. Each hole has a drink and a par: the number of sips it should take to finish it. Count your sips, add any penalties, and write it on the card. Lowest total after hole 8 wins. It's golf, so there's no rush: the pars are generous on purpose and nobody needs to scull anything.</p>
+    <div class="rules">
+      <div class="card">
+        <h3>Scoring</h3>
+        <ul>
+          <li>Your score for a hole is the number of sips to finish the drink, plus penalties.</li>
+          <li>Finish it in one go and it's a hole in one, but you score 1, not less. Pacing beats heroics.</li>
+          <li>Can't finish it? You take par + 3 for that hole and move on.</li>
+          <li>Each player gets <strong>one mulligan</strong>: swap that hole's drink for a lemonade or soda with no penalty.</li>
+          <li>Ties are settled by the Halloween Putt-off: best costume pose, judged by the bar staff at the Good Home.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Penalties and bonuses</h3>
+        <ul class="pen">
+          <li><span>Spilling your drink</span><b class="bad">+1</b></li>
+          <li><span>Toilet break before hole 4</span><b class="bad">+2</b></li>
+          <li><span>Taking off part of your costume</span><b class="bad">+2</b></li>
+          <li><span>Phone out at the bar during a hole</span><b class="bad">+1</b></li>
+          <li><span>Saying the birthday legend's real name before hole 2 (surprise!)</span><b class="bad">+1</b></li>
+          <li><span>Skipping a water hazard</span><b class="bad">+2</b></li>
+          <li><span>Best costume, voted at hole 1</span><b class="good">−3</b></li>
+          <li><span>The birthday legend, every hole</span><b class="good">−1</b></li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Water hazards</h3>
+        <p>Holes 3, 5 and 7 have a water hazard. Before you tee off there, everyone drinks a full glass of water. Skip it and take +2. It's the cheapest way to make it to the Good Home in one piece.</p>
+        <p class="muted">Bar staff in NZ can't serve anyone who's intoxicated, so if one of us gets cut off, the whole team loses a bar. Eat at hole 5.</p>
+      </div>
+      <div class="card">
+        <h3>Halloween dress code</h3>
+        <ul>
+          <li>Full costume, all day. Costume pieces off cost strokes.</li>
+          <li>Masks off at the door: bouncers need to see your face and ID. Bring real ID, Halloween means busy doors.</li>
+          <li>No fake weapons. Most bars will turn them away.</li>
+          <li>Group photo on the wharf at hole 1, and on the Maungawhau platform before hole 8.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="trick">
+    <p class="eyebrow">At every tee</p>
+    <h2>Trick or Treat</h2>
+    <div class="tot">
+      <div class="card">
+        <p>Before each hole, one player draws a card for the group (or one each, if you're feeling brave). A <strong>treat</strong> helps you, a <strong>trick</strong> doesn't. Do the trick or take +1.</p>
+        <div class="sc-tools">
+          <button class="primary" id="drawBtn" type="button">Draw a card</button>
+          <span class="note" id="drawCount"></span>
+        </div>
+      </div>
+      <div class="tot-card" id="totCard">
+        <span class="kind">Boo</span>
+        <p>Tap "Draw a card" at the start of each hole.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="card">
+    <p class="eyebrow">The card</p>
+    <h2>Scorecard</h2>
+    <p class="lead">One person keeps the card on their phone. It saves on this phone as you go. The names below are examples, so rename them, add the whole crew and delete the extras.</p>
+    <div class="sc-tools">
+      <input type="text" id="newPlayer" placeholder="Add a player" maxlength="24">
+      <button type="button" id="addPlayer">Add</button>
+      <button type="button" id="copyScores">Copy for the group chat</button>
+      <button type="button" id="resetScores">Clear scores</button>
+    </div>
+    <p class="toast" id="toast" role="status"></p>
+    <div class="sc-wrap"><table class="sc" id="scTable"></table></div>
+    <h3>Leaderboard</h3>
+    <div class="board" id="board"></div>
+  </section>
+
+  <section id="budget">
+    <p class="eyebrow">Keeping it cheap</p>
+    <h2>What it should cost</h2>
+    <p class="lead">One drink per hole at happy hour prices where they exist. Prices are from venue listings and will move a dollar or two either way.</p>
+    <div class="card budget"><table class="money" id="money"></table></div>
+    <div class="card">
+      <h3>Ways to spend less</h3>
+      <ul>
+        <li>Split the jugs at hole 1 between three or four people. It's the cheapest beer on the course.</li>
+        <li>Hole 2 is the only cocktail. Use your mulligan there if you're on a tight budget, a lemonade is a few dollars.</li>
+        <li>Have a feed at Coco's (hole 5). Happy hour food there has been $15 to $20, much cheaper than a late night kebab.</li>
+        <li>One person shouts each hole and everyone squares up on the day with a bank transfer. Rounds go faster and nobody holds a bar tab.</li>
+        <li>Load your HOP card the night before, or tap a contactless card on the gates.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="prep">
+    <p class="eyebrow">Organiser checklist</p>
+    <h2>Before the day</h2>
+    <div class="rules">
+      <div class="card">
+        <h3>Call ahead (week of 26 Oct)</h3>
+        <ul>
+          <li><strong>The Good Home Mt Eden</strong>, 09 630 7740: book a table for the group from 9pm and ask if they'll put on a birthday cake or a jug at the finish. One listing shows short Saturday hours, so confirm they're open late.</li>
+          <li><strong>Galbraith's Alehouse</strong>, 09 379 3557: tell them a costumed group is coming about 8pm.</li>
+          <li><strong>Coco's Cantina</strong>: confirm happy hour times (listings say 5pm to 7pm daily, or 4pm to 6pm Tuesday to Saturday) and whether they'll take a group.</li>
+          <li><strong>Thirsty Dog</strong>: ask whether there's a Saturday drinks special.</li>
+          <li><strong>Danny Doolans</strong>: check the jug price. Listings say $25 to $29 until 8pm.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Keeping it a surprise</h3>
+        <ul>
+          <li>Tell the birthday legend to be at the Viaduct at 2:15pm in costume for "a few drinks".</li>
+          <li>Everyone else meets inside Danny Doolans at 2:00pm.</li>
+          <li>Hand them the scorecard at 2:30pm. That's the reveal.</li>
+          <li>Check the AT journey planner the week before. The CRL is only weeks old and weekend timetables can change.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p>Happy hours are taken from venue websites and listing sites (Snappy Hour, Heart of the City, Urban List, Viaduct Harbour) as of October 2026. Deals change without notice, so confirm with each bar before the day. Drink water, eat something, and get home safe.</p>
+    <p><a href="#top">Back to the top</a></p>
+  </footer>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  // NZ daylight time (UTC+13) is in force on 31 October 2026.
+  var DAY = { y: 2026, m: 9, d: 31, utcOffset: 13 };
+  function at(hhmm) {
+    var p = hhmm.split(':');
+    return Date.UTC(DAY.y, DAY.m, DAY.d, +p[0] - DAY.utcOffset, +p[1]);
+  }
+  function fmt(hhmm) {
+    var p = hhmm.split(':'), h = +p[0], m = p[1];
+    var ap = h >= 12 ? 'pm' : 'am';
+    h = h % 12 || 12;
+    return h + (m === '00' ? '' : ':' + m) + ap;
+  }
+
+  var HOLES = [
+    {
+      name: 'Danny Doolans', title: 'The Haunted Tee', area: 'Viaduct',
+      addr: '204 Quay Street, Viaduct Harbour', q: 'Danny Doolans 204 Quay Street Auckland',
+      start: '14:30', end: '15:25',
+      hh: { from: '11:00', to: '20:00', sure: true, text: 'Jugs of Tui or Export Gold, <b>$25 to $29</b> until 8pm, every day' },
+      drink: 'A handle poured from a shared jug', par: 3, cost: 8,
+      plan: 'Rules briefing, costume parade and the best costume vote. Wharf group photo.',
+      leg: { rail: false, text: 'Walk upstairs, same building.' }
+    },
+    {
+      name: 'Parasol & Swing Co.', title: "The Witch's Brew", area: 'Viaduct',
+      addr: '204 Quay Street (upstairs), Viaduct Harbour', q: 'Parasol and Swing Company 204 Quay Street Auckland',
+      start: '15:30', end: '16:10',
+      hh: { from: '15:00', to: '18:00', sure: true, text: '<b>$15 cocktails</b>, 3pm to 6pm daily' },
+      drink: 'One cocktail, the spookier the colour the better', par: 3, cost: 15,
+      plan: 'The only cocktail on the course. Good place for a mulligan if you are watching the pennies.',
+      leg: { rail: false, text: 'Walk about 15 minutes up through the city to Durham Street West, near Victoria Street.' }
+    },
+    {
+      name: 'Hazy Tiger', title: 'The Pumpkin Patch', area: 'City centre',
+      addr: '22 Durham Street West, Auckland Central', q: 'Hazy Tiger 22 Durham Street West Auckland',
+      start: '16:25', end: '17:00', water: true,
+      hh: { from: '16:00', to: '18:00', sure: true, text: '<b>$9 tap beers</b>, 4pm to 6pm Saturday' },
+      drink: 'A $9 tap beer', par: 3, cost: 9,
+      plan: 'Water hazard: a glass of water each before teeing off.',
+      leg: { rail: true, text: 'Walk to Te Waihorotiu station (Victoria Street entrance, a few minutes away). CRL train one stop to Karanga-a-Hape, about 3 minutes. Exit at Beresford Square.' }
+    },
+    {
+      name: 'Carmen Jones', title: 'The Blood Bank', area: 'K Road',
+      addr: '382 Karangahape Road', q: 'Carmen Jones 382 Karangahape Road Auckland',
+      start: '17:15', end: '17:55',
+      hh: { from: '15:00', to: '18:00', sure: true, text: '<b>$9 house drinks and sangria</b>, 3pm to 6pm Saturday' },
+      drink: 'Sangria, blood red', par: 3, cost: 9,
+      plan: 'Order the round before 6pm when happy hour finishes.',
+      leg: { rail: false, text: 'Next door, about 1 minute.' }
+    },
+    {
+      name: "Coco's Cantina", title: 'The Crypt Kitchen', area: 'K Road',
+      addr: '376 Karangahape Road', q: "Coco's Cantina 376 Karangahape Road Auckland",
+      start: '18:00', end: '18:45', water: true,
+      hh: { from: '17:00', to: '19:00', sure: false, text: 'Happy hour drinks and cheap pasta, <b>5pm to 7pm</b> per Snappy Hour (another listing says 4pm to 6pm). Confirm.' },
+      drink: 'House wine or a tap beer', par: 3, cost: 10,
+      plan: 'Water hazard, and the food stop. Get the happy hour pasta in.',
+      leg: { rail: false, text: 'Walk 3 minutes west along K Road.' }
+    },
+    {
+      name: 'The Thirsty Dog', title: 'The Graveyard Shift', area: 'K Road',
+      addr: '469 Karangahape Road', q: 'Thirsty Dog 469 Karangahape Road Auckland',
+      start: '18:55', end: '19:35',
+      hh: null,
+      drink: 'Cheapest beer on tap, or a half', par: 3, cost: 11,
+      plan: 'No confirmed Saturday deal. Ask at the bar for a special, or go a half.',
+      leg: { rail: false, text: 'The par 5 dog-leg: walk about 15 minutes east along K Road to the Symonds Street end (or split an Uber).' }
+    },
+    {
+      name: "Galbraith's Alehouse", title: 'The Cemetery Hole', area: 'Grafton',
+      addr: '2 Mount Eden Road, Grafton', q: "Galbraith's Alehouse 2 Mount Eden Road Auckland",
+      start: '19:55', end: '20:35', water: true,
+      hh: null,
+      drink: 'A half pint of house ale', par: 2, cost: 8,
+      plan: 'Water hazard. Symonds Street Cemetery is just across the road, so this is the spooky photo stop.',
+      leg: { rail: true, text: 'Walk to Karanga-a-Hape station (Mercury Lane entrance, a few minutes). CRL train one stop to Maungawhau. The Good Home is a 2 minute walk along Normanby Road.' }
+    },
+    {
+      name: 'The Good Home Mt Eden', title: 'The 19th Hole', area: 'Mt Eden',
+      addr: '37 Normanby Road, Mt Eden', q: 'The Good Home 37 Normanby Road Mount Eden Auckland',
+      start: '20:50', end: '23:00',
+      hh: null,
+      drink: 'Birthday pint', par: 3, cost: 12,
+      plan: 'Final putt, prize giving and the birthday toast. Book a table ahead.',
+      leg: null
+    }
+  ];
+
+  var TRICKS = [
+    'Order this hole\'s round in your costume character\'s voice. Break character and take +1.',
+    'Drink this hole with your wrong hand. Swap hands and take +1.',
+    'Lead the group in a chorus of "Monster Mash" before anyone sips.',
+    'Swap one costume piece with the player on your left until the next hole.',
+    'Every sip this hole must be preceded by an evil laugh.',
+    'Ask the bar staff to rate your costume out of 10. Under 7 is +1.',
+    'You may not use anyone\'s name this hole. Each slip is +1.',
+    'Tell the birthday legend your best story about them before you tee off.',
+    'Do this hole standing on one leg like a scarecrow. Put the foot down and take +1.',
+    'You are the group\'s zombie: shuffle, groan, and nothing else until you finish.'
+  ];
+  var TREATS = [
+    'Treat: take 1 stroke off this hole.',
+    'Treat: you choose who gets +1 this hole.',
+    'Treat: free toilet pass, no penalty, any hole.',
+    'Treat: swap scores for this hole with any player who agrees. Good luck.',
+    'Treat: the next trick drawn by anyone can be passed to someone else by you.',
+    'Treat: your water hazard this hole is waived.',
+    'Treat: the birthday legend has to cheers you before every sip this hole.',
+    'Treat: you are immune to penalties this hole.'
+  ];
+
+  var PAR = HOLES.reduce(function (s, h) { return s + h.par; }, 0);
+  var COST = HOLES.reduce(function (s, h) { return s + h.cost; }, 0) + 6;
+
+  function $(id) { return document.getElementById(id); }
+  function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function mapsUrl(q) { return 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(q); }
+
+  // ---------- storage ----------
+  var KEY = 'hallow-pub-golf-v1';
+  var state;
+  function load() {
+    try { state = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) { state = null; }
+    if (!state || !Array.isArray(state.players)) {
+      state = {
+        bday: '',
+        players: ['Ghost', 'Witch', 'Vampire', 'Zombie'].map(function (n, i) { return { id: 'p' + i, name: n }; }),
+        scores: {},
+        drawn: 0
+      };
+    }
+    state.scores = state.scores || {};
+  }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* storage blocked, keep going in memory */ } }
+
+  // ---------- header status ----------
+  function hhState(h, now) {
+    if (!h.hh) return null;
+    var a = at(h.hh.from), b = at(h.hh.to);
+    if (now < a) return { cls: 'hh-soon', text: 'Happy hour ' + fmt(h.hh.from) + ' to ' + fmt(h.hh.to) };
+    if (now < b) {
+      var mins = Math.round((b - now) / 60000);
+      return { cls: 'hh-on', text: 'Happy hour on, ends in ' + (mins >= 60 ? Math.floor(mins / 60) + 'h ' : '') + (mins % 60) + 'm' };
+    }
+    return { cls: 'hh-off', text: 'Happy hour over' };
+  }
+  function currentHole(now) {
+    for (var i = 0; i < HOLES.length; i++) {
+      if (now >= at(HOLES[i].start) && now < at(HOLES[i].end)) return { i: i, playing: true };
+      if (now < at(HOLES[i].start)) return { i: i, playing: false };
+    }
+    return null;
+  }
+  function renderStatus() {
+    var now = Date.now();
+    var start = at('14:30');
+    var el = $('status');
+    var bday = state.bday || 'the Birthday Legend';
+    if (now < start) {
+      var s = Math.floor((start - now) / 1000);
+      var d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60), sec = s % 60;
+      el.innerHTML = '<p class="eyebrow">Tee off at Danny Doolans in</p><div class="count mono">' +
+        [[d, 'days'], [h, 'hours'], [m, 'mins'], [sec, 'secs']].map(function (x) { return '<div><b>' + String(x[0]).padStart(2, '0') + '</b><small>' + x[1] + '</small></div>'; }).join('') +
+        '</div><p class="muted">Saturday 31 October, 2:30pm. Crew meets at 2:00pm, ' + esc(bday) + ' arrives 2:15pm.</p>';
+      return;
+    }
+    var cur = currentHole(now);
+    if (!cur) {
+      el.innerHTML = '<p class="eyebrow">Round complete</p><h3>Happy birthday, ' + esc(bday) + '!</h3><p class="muted">Check the leaderboard for the champion. Get home safe.</p>';
+      return;
+    }
+    var h = HOLES[cur.i];
+    var label = cur.playing ? 'Now playing hole ' + (cur.i + 1) : 'Next up: hole ' + (cur.i + 1) + ', tee off ' + fmt(h.start);
+    var leaveBy = cur.playing ? 'Leave by ' + fmt(h.end) + '.' : '';
+    var st = hhState(h, now);
+    el.innerHTML = '<p class="eyebrow">' + label + '</p><h3>' + esc(h.name) + ' · ' + esc(h.title) + '</h3>' +
+      '<p class="muted">' + esc(h.addr) + '. ' + leaveBy + '</p>' +
+      (st ? '<div class="chips"><span class="chip ' + st.cls + '"><span class="dot"></span>' + st.text + '</span></div>' : '') +
+      (cur.playing && h.leg ? '<p>Then: ' + esc(h.leg.text) + '</p>' : '');
+  }
+
+  // ---------- map ----------
+  function renderMap() {
+    var rail = 'var(--rail)', pumpkin = 'var(--pumpkin)', bone = 'var(--bone)', muted = 'var(--muted)', line = 'var(--line)', panel = 'var(--panel-2)';
+    var x = 196, fx = 320;
+    var stations = [
+      { y: 50, name: 'Waitematā', sub: 'Britomart · ride through' },
+      { y: 170, name: 'Te Waihorotiu', sub: 'Board after hole 3' },
+      { y: 300, name: 'Karanga-a-Hape', sub: 'K Road' },
+      { y: 450, name: 'Maungawhau', sub: 'Mt Eden' }
+    ];
+    var spots = [
+      { y: 30, label: 'Danny Doolans', st: 0 }, { y: 70, label: 'Parasol & Swing', st: 0 },
+      { y: 170, label: 'Hazy Tiger', st: 1 },
+      { y: 250, label: 'Carmen Jones', st: 2 }, { y: 285, label: "Coco's Cantina", st: 2 }, { y: 320, label: 'Thirsty Dog', st: 2 }, { y: 355, label: "Galbraith's", st: 2 },
+      { y: 450, label: 'The Good Home', st: 3 }
+    ];
+    var s = '<svg viewBox="0 0 500 490" role="img" aria-label="Schematic of the City Rail Link with the eight holes beside their stations">';
+    s += '<line x1="' + x + '" y1="20" x2="' + x + '" y2="470" stroke="' + rail + '" stroke-width="8" stroke-linecap="round"/>';
+    // our two train rides
+    s += '<line x1="' + (x - 16) + '" y1="182" x2="' + (x - 16) + '" y2="288" stroke="' + pumpkin + '" stroke-width="3" stroke-dasharray="1 7" stroke-linecap="round"/>';
+    s += '<line x1="' + (x - 16) + '" y1="312" x2="' + (x - 16) + '" y2="438" stroke="' + pumpkin + '" stroke-width="3" stroke-dasharray="1 7" stroke-linecap="round"/>';
+    s += '<text x="' + (x - 26) + '" y="240" fill="' + pumpkin + '" font-size="11" text-anchor="end">CRL ride 1</text>';
+    s += '<text x="' + (x - 26) + '" y="380" fill="' + pumpkin + '" font-size="11" text-anchor="end">CRL ride 2</text>';
+    spots.forEach(function (h, i) {
+      var sy = stations[h.st].y;
+      s += '<path d="M' + (x + 12) + ' ' + sy + ' C ' + (x + 60) + ' ' + sy + ', ' + (fx - 60) + ' ' + h.y + ', ' + (fx - 14) + ' ' + h.y + '" stroke="' + line + '" stroke-width="1.5" fill="none"/>';
+    });
+    stations.forEach(function (st) {
+      s += '<circle cx="' + x + '" cy="' + st.y + '" r="11" fill="' + panel + '" stroke="' + bone + '" stroke-width="4"/>';
+      s += '<text x="' + (x - 22) + '" y="' + (st.y + 1) + '" fill="' + bone + '" font-size="15" font-weight="800" text-anchor="end">' + st.name + '</text>';
+      s += '<text x="' + (x - 22) + '" y="' + (st.y + 17) + '" fill="' + muted + '" font-size="11.5" text-anchor="end">' + st.sub + '</text>';
+    });
+    spots.forEach(function (h, i) {
+      s += '<circle cx="' + fx + '" cy="' + h.y + '" r="13" fill="' + pumpkin + '"/>';
+      s += '<text x="' + fx + '" y="' + (h.y + 4.5) + '" fill="var(--pumpkin-ink)" font-size="13" font-weight="800" text-anchor="middle">' + (i + 1) + '</text>';
+      s += '<text x="' + (fx + 22) + '" y="' + (h.y + 4.5) + '" fill="' + bone + '" font-size="13" font-weight="600">' + h.label + '</text>';
+    });
+    s += '<text x="' + (fx + 22) + '" y="482" fill="' + muted + '" font-size="11">Schematic, not to scale</text>';
+    s += '</svg>';
+    $('map').innerHTML = s;
+  }
+
+  // ---------- timeline ----------
+  function renderTimeline() {
+    var T0 = at('14:00'), T1 = at('22:00'), span = T1 - T0;
+    function pct(t) { return Math.max(0, Math.min(100, (t - T0) / span * 100)); }
+    var rows = HOLES.map(function (h, i) {
+      var bars = '';
+      if (h.hh) {
+        var a = pct(at(h.hh.from)), b = pct(at(h.hh.to));
+        bars += '<div class="tl-hh' + (h.hh.sure ? '' : ' unsure') + '" style="left:' + a + '%;width:' + (b - a) + '%"></div>';
+      }
+      var us = pct(at(h.start)), ue = pct(at(h.end));
+      bars += '<div class="tl-us" style="left:' + us + '%;width:' + (ue - us) + '%" title="' + fmt(h.start) + ' to ' + fmt(h.end) + '"></div>';
+      return '<div class="tl-row"><div class="tl-name">' + (i + 1) + '. ' + esc(h.name) + '</div><div class="tl-track">' + bars + '</div></div>';
+    }).join('');
+    var ticks = ['14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00'].map(function (t) {
+      return '<span style="left:' + pct(at(t)) + '%">' + fmt(t) + '</span>';
+    }).join('');
+    $('timeline').innerHTML = rows + '<div class="tl-axis"><div></div><div class="tl-ticks">' + ticks + '</div></div>';
+  }
+
+  // ---------- holes ----------
+  var trainIcon = '<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><rect x="3" y="1.5" width="10" height="10" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M3 7h10M5.5 14.5l1-3M10.5 14.5l-1-3" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>';
+  var walkIcon = '<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="9" cy="2.5" r="1.6" fill="currentColor"/><path d="M8.5 5 6.5 9l2.5 2-1 4M8.5 5l2 3 2 .5M6.5 9 4.5 14.5" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>';
+  function renderHoles() {
+    var now = Date.now();
+    $('holeList').innerHTML = HOLES.map(function (h, i) {
+      var cls = 'hole';
+      if (now >= at(h.start) && now < at(h.end)) cls += ' now';
+      else if (now >= at(h.end)) cls += ' done';
+      var chips = '';
+      if (h.hh) {
+        var st = hhState(h, now);
+        var onTheDay = now >= at('00:00');
+        chips += onTheDay && st ? '<span class="chip ' + st.cls + '"><span class="dot"></span>' + st.text + '</span>'
+          : '<span class="chip ' + (h.hh.sure ? 'hh-on' : 'warn') + '"><span class="dot"></span>Happy hour ' + fmt(h.hh.from) + ' to ' + fmt(h.hh.to) + '</span>';
+      } else {
+        chips += '<span class="chip hh-off"><span class="dot"></span>No Saturday deal found</span>';
+      }
+      if (h.water) chips += '<span class="chip" style="color:var(--rail)">Water hazard</span>';
+      chips += '<span class="chip">≈ $' + h.cost + '</span>';
+      var leg = h.leg ? '<p class="leg' + (h.leg.rail ? ' rail' : '') + '">' + (h.leg.rail ? trainIcon : walkIcon) + '<span>' + esc(h.leg.text) + '</span></p>' : '<p class="leg">' + walkIcon + '<span>Final hole. Get the taxis or trains home sorted before you sit down.</span></p>';
+      return '<article class="' + cls + '" id="hole-' + (i + 1) + '">' +
+        '<div class="flag"><span class="no">' + (i + 1) + '</span><span class="par">Par<b>' + h.par + '</b></span></div>' +
+        '<div class="hole-body">' +
+          '<div class="hole-top"><span class="hole-name">' + esc(h.title) + '</span><span class="time">' + fmt(h.start) + ' to ' + fmt(h.end) + '</span></div>' +
+          '<h3><a href="' + mapsUrl(h.q) + '" target="_blank" rel="noopener">' + esc(h.name) + '</a></h3>' +
+          '<p class="addr">' + esc(h.addr) + ' · <a href="' + mapsUrl(h.q) + '" target="_blank" rel="noopener">Map</a></p>' +
+          '<div class="chips">' + chips + '</div>' +
+          (h.hh ? '<p class="deal">' + h.hh.text + '</p>' : '') +
+          '<dl class="kv"><dt>The drink</dt><dd>' + esc(h.drink) + '</dd><dt>The plan</dt><dd>' + esc(h.plan) + '</dd></dl>' +
+          leg +
+        '</div></article>';
+    }).join('');
+  }
+
+  // ---------- trick or treat ----------
+  var lastCard = -1;
+  function draw() {
+    var deck = TRICKS.map(function (t) { return { k: 'Trick', t: t }; }).concat(TREATS.map(function (t) { return { k: 'Treat', t: t.replace(/^Treat: /, '') }; }));
+    var n;
+    do { n = Math.floor(Math.random() * deck.length); } while (n === lastCard && deck.length > 1);
+    lastCard = n;
+    var c = deck[n];
+    var el = $('totCard');
+    el.className = 'tot-card ' + c.k.toLowerCase();
+    void el.offsetWidth;
+    el.classList.add('flip');
+    var text = c.t.replace(/the birthday legend/gi, state.bday || 'the birthday legend');
+    el.innerHTML = '<span class="kind">' + c.k + '</span><p>' + esc(text) + '</p>';
+    state.drawn = (state.drawn || 0) + 1;
+    $('drawCount').textContent = state.drawn + ' drawn so far';
+    save();
+  }
+
+  // ---------- scorecard ----------
+  function score(pid, i) {
+    var v = state.scores[pid] && state.scores[pid][i];
+    return typeof v === 'number' && !isNaN(v) ? v : null;
+  }
+  function totals(pid) {
+    var t = 0, played = 0, parPlayed = 0;
+    HOLES.forEach(function (h, i) { var v = score(pid, i); if (v !== null) { t += v; played++; parPlayed += h.par; } });
+    return { t: t, played: played, rel: t - parPlayed };
+  }
+  function relText(r, played) {
+    if (!played) return '–';
+    return r === 0 ? 'E' : (r > 0 ? '+' + r : String(r));
+  }
+  function renderCard() {
+    var head = '<thead><tr><th class="p">Player</th>' + HOLES.map(function (h, i) { return '<th scope="col">' + (i + 1) + '</th>'; }).join('') + '<th>Tot</th><th>±</th></tr></thead>';
+    var parRow = '<tr class="parrow"><th class="p">Par</th>' + HOLES.map(function (h) { return '<td>' + h.par + '</td>'; }).join('') + '<td>' + PAR + '</td><td></td></tr>';
+    var rows = state.players.map(function (p) {
+      var t = totals(p.id);
+      return '<tr><th class="p" scope="row"><div class="pname"><input type="text" id="name-' + p.id + '" data-name="' + p.id + '" value="' + esc(p.name) + '" aria-label="Player name"><button class="rm" type="button" data-rm="' + p.id + '" aria-label="Remove ' + esc(p.name) + '">✕</button></div></th>' +
+        HOLES.map(function (h, i) {
+          var v = score(p.id, i);
+          return '<td><input type="number" inputmode="numeric" min="0" max="20" id="s-' + p.id + '-' + i + '" data-p="' + p.id + '" data-h="' + i + '" value="' + (v === null ? '' : v) + '" aria-label="' + esc(p.name) + ' hole ' + (i + 1) + '"></td>';
+        }).join('') +
+        '<td class="tot">' + (t.played ? t.t : '–') + '</td><td class="tot ' + (t.rel < 0 ? 'under' : t.rel > 0 ? 'over' : '') + '">' + relText(t.rel, t.played) + '</td></tr>';
+    }).join('');
+    $('scTable').innerHTML = head + '<tbody>' + parRow + rows + '</tbody>';
+    renderBoard();
+  }
+  function ranked() {
+    return state.players.map(function (p) { return { p: p, s: totals(p.id) }; })
+      .sort(function (a, b) {
+        if (!a.s.played && b.s.played) return 1;
+        if (a.s.played && !b.s.played) return -1;
+        return a.s.rel - b.s.rel || a.s.t - b.s.t;
+      });
+  }
+  function renderBoard() {
+    var list = ranked();
+    if (!list.length) { $('board').innerHTML = '<p class="note">Add players above to start the card.</p>'; return; }
+    $('board').innerHTML = list.map(function (r, i) {
+      return '<div class="row"><span class="pos">' + (i + 1) + '</span><span class="nm">' + esc(r.p.name) + '</span><span class="mono muted">' + r.s.played + '/8</span><span class="mono ' + (r.s.rel < 0 ? 'under' : r.s.rel > 0 ? 'over' : '') + '">' + relText(r.s.rel, r.s.played) + (r.s.played ? ' (' + r.s.t + ')' : '') + '</span></div>';
+    }).join('');
+  }
+  function updateRow(pid) {
+    // Refresh only totals and the board so the input being typed in keeps focus.
+    var t = totals(pid);
+    var input = $('s-' + pid + '-0');
+    if (!input) return;
+    var cells = input.closest('tr').querySelectorAll('td.tot');
+    cells[0].textContent = t.played ? t.t : '–';
+    cells[1].textContent = relText(t.rel, t.played);
+    cells[1].className = 'tot ' + (t.rel < 0 ? 'under' : t.rel > 0 ? 'over' : '');
+    renderBoard();
+  }
+  function toast(msg) { $('toast').textContent = msg; clearTimeout(toast.t); toast.t = setTimeout(function () { $('toast').textContent = ''; }, 3000); }
+
+  function shareText() {
+    var lines = ['HALLOW PUB GOLF, 31 Oct. Par ' + PAR];
+    ranked().forEach(function (r, i) {
+      lines.push((i + 1) + '. ' + r.p.name + ': ' + (r.s.played ? r.s.t + ' (' + relText(r.s.rel, r.s.played) + ') after ' + r.s.played + ' holes' : 'not started'));
+    });
+    return lines.join('\n');
+  }
+
+  function bindCard() {
+    $('scTable').addEventListener('input', function (e) {
+      var el = e.target;
+      if (el.dataset.p) {
+        var pid = el.dataset.p, i = +el.dataset.h;
+        state.scores[pid] = state.scores[pid] || {};
+        if (el.value === '') delete state.scores[pid][i];
+        else state.scores[pid][i] = Math.max(0, Math.min(20, parseInt(el.value, 10) || 0));
+        save(); updateRow(pid);
+      } else if (el.dataset.name) {
+        var pl = state.players.find(function (p) { return p.id === el.dataset.name; });
+        if (pl) { pl.name = el.value; save(); renderBoard(); }
+      }
+    });
+    $('scTable').addEventListener('click', function (e) {
+      var b = e.target.closest('[data-rm]');
+      if (!b) return;
+      var id = b.dataset.rm;
+      if (b.dataset.armed !== '1') {
+        b.dataset.armed = '1'; b.textContent = 'Sure?';
+        setTimeout(function () { if (b.isConnected) { b.dataset.armed = ''; b.textContent = '✕'; } }, 2500);
+        return;
+      }
+      state.players = state.players.filter(function (p) { return p.id !== id; });
+      delete state.scores[id];
+      save(); renderCard();
+    });
+    function add() {
+      var n = $('newPlayer').value.trim();
+      if (!n) { $('newPlayer').focus(); return; }
+      state.players.push({ id: 'p' + Date.now().toString(36), name: n });
+      $('newPlayer').value = '';
+      save(); renderCard(); toast(n + ' added.');
+    }
+    $('addPlayer').addEventListener('click', add);
+    $('newPlayer').addEventListener('keydown', function (e) { if (e.key === 'Enter') add(); });
+    var resetArmed = false;
+    $('resetScores').addEventListener('click', function () {
+      if (!resetArmed) { resetArmed = true; $('resetScores').textContent = 'Tap again to clear'; setTimeout(function () { resetArmed = false; $('resetScores').textContent = 'Clear scores'; }, 3000); return; }
+      resetArmed = false; $('resetScores').textContent = 'Clear scores';
+      state.scores = {}; save(); renderCard(); toast('Scores cleared. Players kept.');
+    });
+    $('copyScores').addEventListener('click', function () {
+      var text = shareText();
+      var done = function () { toast('Copied. Paste it in the group chat.'); };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done, function () { fallbackCopy(text); });
+      } else fallbackCopy(text);
+    });
+  }
+  function fallbackCopy(text) {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+    document.body.removeChild(ta);
+    toast(ok ? 'Copied. Paste it in the group chat.' : 'Copy blocked here. Screenshot the leaderboard instead.');
+  }
+
+  // ---------- budget ----------
+  function renderMoney() {
+    var rows = HOLES.map(function (h, i) {
+      return '<tr><td>' + (i + 1) + '. ' + esc(h.name) + '</td><td>' + esc(h.drink) + '</td><td class="n">$' + h.cost + '</td></tr>';
+    }).join('');
+    rows += '<tr><td>CRL trains</td><td>Te Waihorotiu to K Road, K Road to Maungawhau</td><td class="n">≈ $6</td></tr>';
+    $('money').innerHTML = '<thead><tr><th>Hole</th><th>Drink</th><th style="text-align:right">Each</th></tr></thead><tbody>' + rows +
+      '</tbody><tfoot><tr><td>Total per person</td><td class="muted" style="font-weight:400">Plus food at Coco\'s and the trip home</td><td class="n">≈ $' + COST + '</td></tr></tfoot>';
+  }
+
+  // ---------- birthday name ----------
+  function renderBday() {
+    var n = state.bday ? state.bday : 'the Birthday Legend';
+    $('bdayName').textContent = n;
+    $('bdayInput').value = state.bday || '';
+  }
+
+  // ---------- boot ----------
+  load();
+  $('parTotal').textContent = PAR;
+  $('costChip').textContent = COST;
+  renderBday();
+  renderStatus();
+  renderMap();
+  renderTimeline();
+  renderHoles();
+  renderMoney();
+  renderCard();
+  bindCard();
+  if (state.drawn) $('drawCount').textContent = state.drawn + ' drawn so far';
+  $('drawBtn').addEventListener('click', draw);
+  $('bdayInput').addEventListener('input', function (e) { state.bday = e.target.value.trim(); save(); $('bdayName').textContent = state.bday || 'the Birthday Legend'; renderStatus(); });
+  setInterval(renderStatus, 1000);
+  setInterval(renderHoles, 60000);
+})();
+</script>
+
+</body>
+</html>
