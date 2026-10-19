@@ -28,6 +28,12 @@
   --go: #7fcf8a;
   --wait: #e8c25a;
   --rail: #c9a7ff;
+  --ink: #07050a;
+  --hill: #0c0811;
+  --moon: #f6e7c4;
+  --moon-shade: #e2cd9e;
+  --bat: #3d2f4f;
+  --window: #ffb347;
   --f-display: 'Creepster', 'Impact', 'Arial Black', sans-serif;
   --f-body: 'Bricolage Grotesque', 'Segoe UI', system-ui, sans-serif;
   --f-mono: 'DM Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
@@ -254,6 +260,53 @@ footer { padding-block: 48px 0; color: var(--muted); font-size: .85rem; display:
   .kv dt { margin-top: 6px; }
 }
 @media (min-width: 720px) { .tot { grid-template-columns: 1.3fr 1fr; align-items: center; } }
+
+/* hero scene */
+.scene { display: block; width: 100%; max-width: 100%; height: auto; border-radius: var(--r); background: linear-gradient(180deg, #1a1124 0%, #241634 60%, #2c1a33 100%); border: 1px solid var(--line); }
+.scene .bat { animation: flap .26s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: center; }
+.scene .batfly { animation: fly 16s linear infinite; }
+.scene .batfly.b2 { animation-duration: 21s; animation-delay: -7s; }
+.scene .batfly.b3 { animation-duration: 26s; animation-delay: -15s; }
+@keyframes flap { to { transform: scaleY(.3); } }
+@keyframes fly { from { transform: translate(-140px, 0); } 50% { transform: translate(420px, -24px); } to { transform: translate(980px, 12px); } }
+.scene .flame { animation: flicker 1.7s ease-in-out infinite; }
+@keyframes flicker { 0%, 100% { opacity: 1; } 35% { opacity: .65; } 60% { opacity: .9; } }
+.scene .flagwave { animation: wave 2.2s ease-in-out infinite; transform-box: fill-box; transform-origin: left center; }
+@keyframes wave { 50% { transform: skewY(8deg) scaleX(.86); } }
+.scene .train { animation: train 10s cubic-bezier(.5,0,.6,1) infinite; }
+@keyframes train { 0% { transform: translateX(-280px); } 75%, 100% { transform: translateX(660px); } }
+.scene .blink { animation: blink 2s steps(1) infinite; }
+@keyframes blink { 50% { opacity: .15; } }
+
+/* tombstone countdown */
+.count div { text-align: center; padding: 14px 10px 10px; min-width: 70px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 40px 40px 6px 6px; box-shadow: inset 0 -6px 0 rgba(0,0,0,.25); }
+
+/* hole icons and connectors */
+.hicon { color: var(--pumpkin); display: grid; place-items: center; margin-top: 6px; }
+.hicon svg { width: 32px; height: 32px; }
+.holes { position: relative; }
+.hole { position: relative; }
+.hole + .hole::before { content: ""; position: absolute; left: 36px; top: -15px; height: 14px; border-left: 2px dotted var(--pumpkin); opacity: .6; }
+@media (max-width: 520px) { .hole + .hole::before { left: 28px; } }
+.hole-art { position: absolute; right: -10px; bottom: -14px; width: 120px; height: 120px; color: var(--pumpkin); opacity: .07; pointer-events: none; }
+.hole-art svg { width: 100%; height: 100%; }
+.hole.feature { border-color: var(--rail); }
+.feature-tag { font: 500 .7rem/1 var(--f-mono); text-transform: uppercase; letter-spacing: .12em; color: var(--night); background: var(--rail); padding: 4px 8px; border-radius: 6px; }
+
+/* awards */
+.awards { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+.award { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 16px; display: grid; gap: 6px; justify-items: start; }
+.award svg { width: 40px; height: 40px; color: var(--pumpkin); }
+.award.spook svg { color: var(--rail); }
+.award h3 { font-size: 1rem; }
+.award p { font-size: .88rem; color: var(--muted); }
+
+/* leaderboard medals */
+.board .pos svg { width: 22px; height: 22px; color: var(--pumpkin); display: block; }
+.board .row.last .pos svg { color: var(--rail); }
+.tot-card .idle { width: 92px; height: 92px; margin: 0 auto; color: var(--pumpkin); }
+
+@media (prefers-reduced-motion: reduce) { .scene *, .tot-card { animation: none !important; } }
 </style>
 
 </head>
@@ -262,6 +315,47 @@ footer { padding-block: 48px 0; color: var(--muted); font-size: .85rem; display:
   <header class="hero" id="top">
     <p class="eyebrow">Saturday 31 October 2026 · Tee off 2:30pm · Dress code: Halloween</p>
     <h1>Hallow<span>Pub Golf</span></h1>
+    <svg class="scene" viewBox="0 0 800 260" role="img" aria-label="Halloween night over Auckland: the Sky Tower, a full moon, bats, a CRL train heading into a tunnel under Maungawhau, and a golf flag on the summit">
+      <defs>
+        <radialGradient id="moonGlow"><stop offset="0" stop-color="#ffcf8a" stop-opacity=".42"></stop><stop offset="1" stop-color="#ffcf8a" stop-opacity="0"></stop></radialGradient>
+        <radialGradient id="lanternGlow"><stop offset="0" stop-color="#ff9a3d" stop-opacity=".55"></stop><stop offset="1" stop-color="#ff9a3d" stop-opacity="0"></stop></radialGradient>
+        <clipPath id="tunnelClip"><rect x="0" y="0" width="604" height="260"></rect></clipPath>
+      </defs>
+      <g fill="var(--moon)" opacity=".7"><circle cx="90" cy="34" r="1.3"></circle><circle cx="250" cy="22" r="1"></circle><circle cx="330" cy="58" r="1.4"></circle><circle cx="420" cy="18" r="1"></circle><circle cx="510" cy="44" r="1.2"></circle><circle cx="760" cy="30" r="1.3"></circle><circle cx="40" cy="90" r="1"></circle><circle cx="470" cy="96" r="1"></circle></g>
+      <circle cx="640" cy="78" r="120" fill="url(#moonGlow)"></circle>
+      <circle cx="640" cy="78" r="50" fill="var(--moon)"></circle>
+      <circle cx="622" cy="64" r="9" fill="var(--moon-shade)"></circle><circle cx="657" cy="95" r="6" fill="var(--moon-shade)"></circle><circle cx="661" cy="62" r="4" fill="var(--moon-shade)"></circle>
+      <g transform="translate(0 70)"><g class="batfly"><path class="bat" d="M0 0c4-6 8-6 10-2 2-3 4-3 6 0 2-4 6-4 10 2-4-1-6 0-8 3-2-2-4-2-8 0-2-3-4-4-8-3z" fill="var(--bat)"></path></g></g>
+      <g transform="translate(0 40) scale(.8)"><g class="batfly b2"><path class="bat" d="M0 0c4-6 8-6 10-2 2-3 4-3 6 0 2-4 6-4 10 2-4-1-6 0-8 3-2-2-4-2-8 0-2-3-4-4-8-3z" fill="var(--bat)"></path></g></g>
+      <g transform="translate(0 110) scale(1.2)"><g class="batfly b3"><path class="bat" d="M0 0c4-6 8-6 10-2 2-3 4-3 6 0 2-4 6-4 10 2-4-1-6 0-8 3-2-2-4-2-8 0-2-3-4-4-8-3z" fill="var(--bat)"></path></g></g>
+      <path d="M468 244 C520 222 560 160 606 150 L 676 150 C 716 160 752 214 800 228 V260 H468z" fill="var(--hill)"></path>
+      <path d="M622 150 q19 10 38 0" fill="none" stroke="var(--line)" stroke-width="2"></path>
+      <line x1="668" y1="151" x2="668" y2="108" stroke="var(--bone)" stroke-width="2"></line>
+      <path class="flagwave" d="M669 108 L698 116 L669 124z" fill="var(--pumpkin)"></path>
+      <circle cx="652" cy="149" r="2.6" fill="var(--bone)"></circle>
+      <g fill="var(--ink)">
+        <rect x="176" y="66" width="8" height="190"></rect>
+        <path d="M162 96h36l-5 15h-26z"></path>
+        <rect x="167" y="111" width="26" height="7"></rect>
+        <rect x="178.5" y="18" width="3" height="50"></rect>
+      </g>
+      <circle class="blink" cx="180" cy="17" r="2.4" fill="var(--blood)"></circle>
+      <g id="city"></g>
+      <rect x="0" y="244" width="800" height="16" fill="var(--ink)"></rect>
+      <line x1="0" y1="243" x2="604" y2="243" stroke="var(--line)" stroke-width="2"></line>
+      <g clip-path="url(#tunnelClip)"><g class="train">
+        <rect x="0" y="222" width="200" height="20" rx="9" fill="var(--panel-2)" stroke="var(--rail)" stroke-width="2"></rect>
+        <g fill="var(--window)"><rect x="14" y="227" width="16" height="7" rx="2"></rect><rect x="38" y="227" width="16" height="7" rx="2"></rect><rect x="62" y="227" width="16" height="7" rx="2"></rect><rect x="106" y="227" width="16" height="7" rx="2"></rect><rect x="130" y="227" width="16" height="7" rx="2"></rect><rect x="154" y="227" width="16" height="7" rx="2"></rect></g>
+        <rect x="186" y="227" width="8" height="8" rx="2" fill="var(--moon)"></rect>
+      </g></g>
+      <path d="M598 260V230a24 24 0 0 1 48 0V260z" fill="var(--ink)" stroke="var(--rail)" stroke-width="2.5"></path>
+      <text x="622" y="222" fill="var(--rail)" font-size="9" font-family="DM Mono, monospace" text-anchor="middle">CRL</text>
+      <circle cx="70" cy="226" r="40" fill="url(#lanternGlow)" class="flame"></circle>
+      <ellipse cx="70" cy="230" rx="22" ry="17" fill="var(--pumpkin)"></ellipse>
+      <path d="M70 213c-6 0-9 7-9 17s3 17 9 17 9-7 9-17-3-17-9-17z" fill="none" stroke="#c25200" stroke-width="1.5"></path>
+      <path d="M70 213v-6c0-2 1.5-3 3.5-3" stroke="#4f7a3a" stroke-width="3" fill="none" stroke-linecap="round"></path>
+      <g class="flame" fill="#ffe08a"><path d="M58 224l5-5 4 5z"></path><path d="M73 224l4-5 5 5z"></path><path d="M57 233c4 5 22 5 26 0l-4 1-3-2-3 2-3-2-3 2-3-2-3 2z"></path></g>
+    </svg>
     <p class="sub">Eight holes along the brand new City Rail Link, from the Viaduct to the Good Home Mt Eden, timed so we land in each bar during happy hour. A surprise for <strong id="bdayName">Dylan</strong>, so keep this link well away from them.</p>
     <div class="facts">
       <span class="chip">8 holes</span>
@@ -283,6 +377,7 @@ footer { padding-block: 48px 0; color: var(--muted); font-size: .85rem; display:
     <a href="#rules">Rules</a>
     <a href="#trick">Trick or Treat</a>
     <a href="#card">Scorecard</a>
+    <a href="#awards">Awards</a>
     <a href="#budget">Budget</a>
     <a href="#prep">Before the day</a>
   </nav>
@@ -369,7 +464,7 @@ footer { padding-block: 48px 0; color: var(--muted); font-size: .85rem; display:
         </div>
       </div>
       <div class="tot-card" id="totCard">
-        <span class="kind">Boo</span>
+        <svg class="idle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 6c-5 0-8 3-8 7.5S7 21 12 21s8-3 8-7.5S17 6 12 6z"/><path d="M12 6V3.5c0-.8.6-1.3 1.5-1.3"/><path d="M8 12l1.6-1.6L11 12zM13 12l1.4-1.6L16 12z" fill="currentColor"/><path d="M8 15.5c2 1.8 6 1.8 8 0l-1.3.4-1-.7-1 .7-1.4-.7-1.3.7-1-.7z" fill="currentColor"/></svg>
         <p>Tap "Draw a card" at the start of each hole.</p>
       </div>
     </div>
@@ -389,6 +484,12 @@ footer { padding-block: 48px 0; color: var(--muted); font-size: .85rem; display:
     <div class="sc-wrap"><table class="sc" id="scTable"></table></div>
     <h3>Leaderboard</h3>
     <div class="board" id="board"></div>
+  </section>
+
+  <section id="awards">
+    <p class="eyebrow">Prize giving at the 19th hole</p>
+    <h2>The awards</h2>
+    <div class="awards" id="awardList"></div>
   </section>
 
   <section id="budget">
@@ -418,7 +519,7 @@ footer { padding-block: 48px 0; color: var(--muted); font-size: .85rem; display:
           <li><strong>The Good Home Mt Eden</strong>, 09 630 7740: book a table for the group from 9pm and ask if they'll put on a birthday cake or a jug at the finish. One listing shows short Saturday hours, so confirm they're open late.</li>
           <li><strong>Galbraith's Alehouse</strong>, 09 379 3557: tell them a costumed group is coming about 8pm.</li>
           <li><strong>Coco's Cantina</strong>: confirm happy hour times (listings say 5pm to 7pm daily, or 4pm to 6pm Tuesday to Saturday) and whether they'll take a group.</li>
-          <li><strong>Thirsty Dog</strong>: ask whether there's a Saturday drinks special.</li>
+          <li><strong>Northern Line Bar &amp; Social</strong>: ask what their Saturday happy hour is and when it runs. We're there about 7pm.</li>
           <li><strong>Danny Doolans</strong>: check the jug price. Listings say $25 to $29 until 8pm.</li>
         </ul>
       </div>
@@ -459,7 +560,7 @@ footer { padding-block: 48px 0; color: var(--muted); font-size: .85rem; display:
 
   var HOLES = [
     {
-      name: 'Danny Doolans', title: 'The Haunted Tee', area: 'Viaduct',
+      icon: 'jug', name: 'Danny Doolans', title: 'The Haunted Tee', area: 'Viaduct',
       addr: '204 Quay Street, Viaduct Harbour', q: 'Danny Doolans 204 Quay Street Auckland',
       start: '14:30', end: '15:25',
       hh: { from: '11:00', to: '20:00', sure: true, text: 'Jugs of Tui or Export Gold, <b>$25 to $29</b> until 8pm, every day' },
@@ -468,7 +569,7 @@ footer { padding-block: 48px 0; color: var(--muted); font-size: .85rem; display:
       leg: { rail: false, text: 'Walk upstairs, same building.' }
     },
     {
-      name: 'Parasol & Swing Co.', title: "The Witch's Brew", area: 'Viaduct',
+      icon: 'cauldron', name: 'Parasol & Swing Co.', title: "The Witch's Brew", area: 'Viaduct',
       addr: '204 Quay Street (upstairs), Viaduct Harbour', q: 'Parasol and Swing Company 204 Quay Street Auckland',
       start: '15:30', end: '16:10',
       hh: { from: '15:00', to: '18:00', sure: true, text: '<b>$15 cocktails</b>, 3pm to 6pm daily' },
@@ -477,7 +578,7 @@ footer { padding-block: 48px 0; color: var(--muted); font-size: .85rem; display:
       leg: { rail: false, text: 'Walk about 15 minutes up through the city to Durham Street West, near Victoria Street.' }
     },
     {
-      name: 'Hazy Tiger', title: 'The Pumpkin Patch', area: 'City centre',
+      icon: 'pumpkin', name: 'Hazy Tiger', title: 'The Pumpkin Patch', area: 'City centre',
       addr: '22 Durham Street West, Auckland Central', q: 'Hazy Tiger 22 Durham Street West Auckland',
       start: '16:25', end: '17:00', water: true,
       hh: { from: '16:00', to: '18:00', sure: true, text: '<b>$9 tap beers</b>, 4pm to 6pm Saturday' },
@@ -486,7 +587,7 @@ footer { padding-block: 48px 0; color: var(--muted); font-size: .85rem; display:
       leg: { rail: true, text: 'Walk to Te Waihorotiu station (Victoria Street entrance, a few minutes away). CRL train one stop to Karanga-a-Hape, about 3 minutes. Exit at Beresford Square.' }
     },
     {
-      name: 'Carmen Jones', title: 'The Blood Bank', area: 'K Road',
+      icon: 'blood', name: 'Carmen Jones', title: 'The Blood Bank', area: 'K Road',
       addr: '382 Karangahape Road', q: 'Carmen Jones 382 Karangahape Road Auckland',
       start: '17:15', end: '17:55',
       hh: { from: '15:00', to: '18:00', sure: true, text: '<b>$9 house drinks and sangria</b>, 3pm to 6pm Saturday' },
@@ -495,25 +596,25 @@ footer { padding-block: 48px 0; color: var(--muted); font-size: .85rem; display:
       leg: { rail: false, text: 'Next door, about 1 minute.' }
     },
     {
-      name: "Coco's Cantina", title: 'The Crypt Kitchen', area: 'K Road',
+      icon: 'skull', name: "Coco's Cantina", title: 'The Crypt Kitchen', area: 'K Road',
       addr: '376 Karangahape Road', q: "Coco's Cantina 376 Karangahape Road Auckland",
       start: '18:00', end: '18:45', water: true,
       hh: { from: '17:00', to: '19:00', sure: false, text: 'Happy hour drinks and cheap pasta, <b>5pm to 7pm</b> per Snappy Hour (another listing says 4pm to 6pm). Confirm.' },
       drink: 'House wine or a tap beer', par: 3, cost: 10,
       plan: 'Water hazard, and the food stop. Get the happy hour pasta in.',
-      leg: { rail: false, text: 'Walk 3 minutes west along K Road.' }
+      leg: { rail: false, text: 'Walk about 4 minutes back east along K Road to Beresford Square.' }
     },
     {
-      name: 'The Thirsty Dog', title: 'The Graveyard Shift', area: 'K Road',
-      addr: '469 Karangahape Road', q: 'Thirsty Dog 469 Karangahape Road Auckland',
+      name: 'Northern Line Bar & Social', title: 'Mind the Grave', area: 'K Road', feature: 'Right at the CRL',
+      addr: '6 Beresford Square, by the Karanga-a-Hape station entrance', q: 'Northern Line Bar and Social 6 Beresford Square Auckland',
       start: '18:55', end: '19:35',
-      hh: null,
-      drink: 'Cheapest beer on tap, or a half', par: 3, cost: 11,
-      plan: 'No confirmed Saturday deal. Ask at the bar for a special, or go a half.',
-      leg: { rail: false, text: 'The par 5 dog-leg: walk about 15 minutes east along K Road to the Symonds Street end (or split an Uber).' }
+      hh: { tbc: true, sure: false, text: 'Listed as having a happy hour with cheap drinks, but no times published. <b>Call ahead</b> and ask what runs on a Saturday.' },
+      drink: 'Whatever the happy hour pour is, or a tap beer', par: 3, cost: 10, icon: 'train',
+      plan: 'An underground-themed bar sitting on top of the new underground station. Stand clear of the closing doors.',
+      leg: { rail: false, text: 'Walk about 10 minutes east along K Road to the Symonds Street end.' }
     },
     {
-      name: "Galbraith's Alehouse", title: 'The Cemetery Hole', area: 'Grafton',
+      icon: 'grave', name: "Galbraith's Alehouse", title: 'The Cemetery Hole', area: 'Grafton',
       addr: '2 Mount Eden Road, Grafton', q: "Galbraith's Alehouse 2 Mount Eden Road Auckland",
       start: '19:55', end: '20:35', water: true,
       hh: null,
@@ -522,7 +623,7 @@ footer { padding-block: 48px 0; color: var(--muted); font-size: .85rem; display:
       leg: { rail: true, text: 'Walk to Karanga-a-Hape station (Mercury Lane entrance, a few minutes). CRL train one stop to Maungawhau. The Good Home is a 2 minute walk along Normanby Road.' }
     },
     {
-      name: 'The Good Home Mt Eden', title: 'The 19th Hole', area: 'Mt Eden',
+      icon: 'trophy', name: 'The Good Home Mt Eden', title: 'The 19th Hole', area: 'Mt Eden',
       addr: '37 Normanby Road, Mt Eden', q: 'The Good Home 37 Normanby Road Mount Eden Auckland',
       start: '20:50', end: '23:00',
       hh: null,
@@ -555,6 +656,24 @@ footer { padding-block: 48px 0; color: var(--muted); font-size: .85rem; display:
     'Treat: you are immune to penalties this hole.'
   ];
 
+  var ICONS = {
+    jug: '<path d="M5 6h10v13a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2z"/><path d="M15 9h2.5a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H15"/><path d="M5 6c0-2 2-3 3.5-2 1-1.5 3.5-1.5 4.5 0 1.5-1 3 .5 2 2"/><path d="M8.5 10v7M11.5 10v7"/>',
+    cauldron: '<path d="M4 10h16"/><path d="M5 10c0 6 2.5 9.5 7 9.5s7-3.5 7-9.5"/><path d="M7 21.5l1.5-2.5M17 21.5 15.5 19"/><circle cx="9" cy="6.5" r="1.3"/><circle cx="13.5" cy="4.5" r="1"/><circle cx="15.5" cy="7.5" r=".8"/>',
+    pumpkin: '<path d="M12 6c-5 0-8 3-8 7.5S7 21 12 21s8-3 8-7.5S17 6 12 6z"/><path d="M12 6c-2 0-3 3.5-3 7.5S10 21 12 21s3-3.5 3-7.5S14 6 12 6z"/><path d="M12 6V3.5c0-.8.6-1.3 1.5-1.3"/>',
+    blood: '<path d="M12 3c3 4.5 6 7.5 6 11a6 6 0 0 1-12 0c0-3.5 3-6.5 6-11z"/><path d="M9.5 15a2.5 2.5 0 0 0 2.5 2.5"/>',
+    skull: '<path d="M12 3c-4.4 0-8 3.1-8 7.5 0 2.6 1.3 4.4 3 5.5V20h10v-4c1.7-1.1 3-2.9 3-5.5C20 6.1 16.4 3 12 3z"/><circle cx="9" cy="11" r="1.8"/><circle cx="15" cy="11" r="1.8"/><path d="M10 20v-2M14 20v-2M12 14l-1 2h2z"/>',
+    train: '<rect x="6" y="3" width="12" height="14" rx="3"/><path d="M6 10h12"/><circle cx="9" cy="13.5" r=".9"/><circle cx="15" cy="13.5" r=".9"/><path d="M8.5 20.5 10 17M15.5 20.5 14 17"/>',
+    grave: '<path d="M6 21V9a6 6 0 0 1 12 0v12"/><path d="M3 21h18"/><path d="M12 8v6M9.5 10.5h5"/>',
+    trophy: '<path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4.5A2.5 2.5 0 0 0 7 10M17 6h2.5A2.5 2.5 0 0 1 17 10"/><path d="M12 14v3M9.5 17h5v3.5h-5zM8 20.5h8"/>',
+    crown: '<path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5z"/><path d="M5 16h14"/>',
+    ghost: '<path d="M5 21V10a7 7 0 0 1 14 0v11l-2.3-1.8L14.3 21 12 19.2 9.7 21l-2.4-1.8z"/><circle cx="9.5" cy="10" r="1"/><circle cx="14.5" cy="10" r="1"/>',
+    mask: '<path d="M3 8c3-1 6-1 9 1 3-2 6-2 9-1-.3 5-3 8-6 8-1.6 0-2.4-1-3-2-.6 1-1.4 2-3 2-3 0-5.7-3-6-8z"/><path d="M7 11l2.5.5M17 11l-2.5.5"/>',
+    flag: '<path d="M6 21V3"/><path d="M6 4l11 3.5L6 11"/><ellipse cx="10" cy="21" rx="6" ry="1.5"/>'
+  };
+  function icon(name) {
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (ICONS[name] || '') + '</svg>';
+  }
+
   var PAR = HOLES.reduce(function (s, h) { return s + h.par; }, 0);
   var COST = HOLES.reduce(function (s, h) { return s + h.cost; }, 0) + 6;
 
@@ -581,7 +700,7 @@ footer { padding-block: 48px 0; color: var(--muted); font-size: .85rem; display:
 
   // ---------- header status ----------
   function hhState(h, now) {
-    if (!h.hh) return null;
+    if (!h.hh || h.hh.tbc) return null;
     var a = at(h.hh.from), b = at(h.hh.to);
     if (now < a) return { cls: 'hh-soon', text: 'Happy hour ' + fmt(h.hh.from) + ' to ' + fmt(h.hh.to) };
     if (now < b) {
@@ -638,7 +757,7 @@ footer { padding-block: 48px 0; color: var(--muted); font-size: .85rem; display:
     var spots = [
       { y: 30, label: 'Danny Doolans', st: 0 }, { y: 70, label: 'Parasol & Swing', st: 0 },
       { y: 170, label: 'Hazy Tiger', st: 1 },
-      { y: 250, label: 'Carmen Jones', st: 2 }, { y: 285, label: "Coco's Cantina", st: 2 }, { y: 320, label: 'Thirsty Dog', st: 2 }, { y: 355, label: "Galbraith's", st: 2 },
+      { y: 250, label: 'Carmen Jones', st: 2 }, { y: 285, label: "Coco's Cantina", st: 2 }, { y: 320, label: 'Northern Line', st: 2 }, { y: 355, label: "Galbraith's", st: 2 },
       { y: 450, label: 'The Good Home', st: 3 }
     ];
     var s = '<svg viewBox="0 0 500 490" role="img" aria-label="Schematic of the City Rail Link with the eight holes beside their stations">';
@@ -662,6 +781,12 @@ footer { padding-block: 48px 0; color: var(--muted); font-size: .85rem; display:
       s += '<text x="' + fx + '" y="' + (h.y + 4.5) + '" fill="var(--pumpkin-ink)" font-size="13" font-weight="800" text-anchor="middle">' + (i + 1) + '</text>';
       s += '<text x="' + (fx + 22) + '" y="' + (h.y + 4.5) + '" fill="' + bone + '" font-size="13" font-weight="600">' + h.label + '</text>';
     });
+    var still = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    s += '<g><rect x="' + (x - 7) + '" y="0" width="14" height="30" rx="6" fill="' + bone + '" stroke="' + rail + '" stroke-width="2"/>' +
+      '<rect x="' + (x - 4) + '" y="5" width="8" height="5" rx="1.5" fill="' + pumpkin + '"/><rect x="' + (x - 4) + '" y="14" width="8" height="5" rx="1.5" fill="' + pumpkin + '"/>' +
+      (still ? '<animateTransform attributeName="transform" type="translate" values="0 190" dur="1s" fill="freeze"/>'
+             : '<animateTransform attributeName="transform" type="translate" values="0 20;0 20;0 285;0 285;0 435;0 435" keyTimes="0;.15;.45;.6;.9;1" dur="9s" repeatCount="indefinite"/>') +
+      '</g>';
     s += '<text x="' + (fx + 22) + '" y="482" fill="' + muted + '" font-size="11">Schematic, not to scale</text>';
     s += '</svg>';
     $('map').innerHTML = s;
@@ -673,7 +798,7 @@ footer { padding-block: 48px 0; color: var(--muted); font-size: .85rem; display:
     function pct(t) { return Math.max(0, Math.min(100, (t - T0) / span * 100)); }
     var rows = HOLES.map(function (h, i) {
       var bars = '';
-      if (h.hh) {
+      if (h.hh && !h.hh.tbc) {
         var a = pct(at(h.hh.from)), b = pct(at(h.hh.to));
         bars += '<div class="tl-hh' + (h.hh.sure ? '' : ' unsure') + '" style="left:' + a + '%;width:' + (b - a) + '%"></div>';
       }
@@ -693,14 +818,15 @@ footer { padding-block: 48px 0; color: var(--muted); font-size: .85rem; display:
   function renderHoles() {
     var now = Date.now();
     $('holeList').innerHTML = HOLES.map(function (h, i) {
-      var cls = 'hole';
+      var cls = 'hole' + (h.feature ? ' feature' : '');
       if (now >= at(h.start) && now < at(h.end)) cls += ' now';
       else if (now >= at(h.end)) cls += ' done';
       var chips = '';
       if (h.hh) {
         var st = hhState(h, now);
         var onTheDay = now >= at('00:00');
-        chips += onTheDay && st ? '<span class="chip ' + st.cls + '"><span class="dot"></span>' + st.text + '</span>'
+        if (h.hh.tbc) chips += '<span class="chip warn"><span class="dot"></span>Happy hour, times TBC</span>';
+        else chips += onTheDay && st ? '<span class="chip ' + st.cls + '"><span class="dot"></span>' + st.text + '</span>'
           : '<span class="chip ' + (h.hh.sure ? 'hh-on' : 'warn') + '"><span class="dot"></span>Happy hour ' + fmt(h.hh.from) + ' to ' + fmt(h.hh.to) + '</span>';
       } else {
         chips += '<span class="chip hh-off"><span class="dot"></span>No Saturday deal found</span>';
@@ -709,9 +835,10 @@ footer { padding-block: 48px 0; color: var(--muted); font-size: .85rem; display:
       chips += '<span class="chip">≈ $' + h.cost + '</span>';
       var leg = h.leg ? '<p class="leg' + (h.leg.rail ? ' rail' : '') + '">' + (h.leg.rail ? trainIcon : walkIcon) + '<span>' + esc(h.leg.text) + '</span></p>' : '<p class="leg">' + walkIcon + '<span>Final hole. Get the taxis or trains home sorted before you sit down.</span></p>';
       return '<article class="' + cls + '" id="hole-' + (i + 1) + '">' +
-        '<div class="flag"><span class="no">' + (i + 1) + '</span><span class="par">Par<b>' + h.par + '</b></span></div>' +
+        '<div class="flag"><span class="no">' + (i + 1) + '</span><span class="par">Par<b>' + h.par + '</b></span><span class="hicon">' + icon(h.icon) + '</span></div>' +
+        '<div class="hole-art">' + icon(h.icon) + '</div>' +
         '<div class="hole-body">' +
-          '<div class="hole-top"><span class="hole-name">' + esc(h.title) + '</span><span class="time">' + fmt(h.start) + ' to ' + fmt(h.end) + '</span></div>' +
+          '<div class="hole-top"><span class="hole-name">' + esc(h.title) + (h.feature ? ' <span class="feature-tag">' + esc(h.feature) + '</span>' : '') + '</span><span class="time">' + fmt(h.start) + ' to ' + fmt(h.end) + '</span></div>' +
           '<h3><a href="' + mapsUrl(h.q) + '" target="_blank" rel="noopener">' + esc(h.name) + '</a></h3>' +
           '<p class="addr">' + esc(h.addr) + ' · <a href="' + mapsUrl(h.q) + '" target="_blank" rel="noopener">Map</a></p>' +
           '<div class="chips">' + chips + '</div>' +
@@ -782,7 +909,9 @@ footer { padding-block: 48px 0; color: var(--muted); font-size: .85rem; display:
     var list = ranked();
     if (!list.length) { $('board').innerHTML = '<p class="note">Add players above to start the card.</p>'; return; }
     $('board').innerHTML = list.map(function (r, i) {
-      return '<div class="row"><span class="pos">' + (i + 1) + '</span><span class="nm">' + esc(r.p.name) + '</span><span class="mono muted">' + r.s.played + '/8</span><span class="mono ' + (r.s.rel < 0 ? 'under' : r.s.rel > 0 ? 'over' : '') + '">' + relText(r.s.rel, r.s.played) + (r.s.played ? ' (' + r.s.t + ')' : '') + '</span></div>';
+      var last = i === list.length - 1 && list.length > 2 && r.s.played;
+      var pos = i === 0 && r.s.played ? icon('crown') : last ? icon('ghost') : (i + 1);
+      return '<div class="row' + (last ? ' last' : '') + '"><span class="pos">' + pos + '</span><span class="nm">' + esc(r.p.name) + '</span><span class="mono muted">' + r.s.played + '/8</span><span class="mono ' + (r.s.rel < 0 ? 'under' : r.s.rel > 0 ? 'over' : '') + '">' + relText(r.s.rel, r.s.played) + (r.s.played ? ' (' + r.s.t + ')' : '') + '</span></div>';
     }).join('');
   }
   function updateRow(pid) {
@@ -876,6 +1005,36 @@ footer { padding-block: 48px 0; color: var(--muted); font-size: .85rem; display:
       '</tbody><tfoot><tr><td>Total per person</td><td class="muted" style="font-weight:400">Plus food at Coco\'s and the trip home</td><td class="n">≈ $' + COST + '</td></tr></tfoot>';
   }
 
+  // ---------- awards ----------
+  function renderAwards() {
+    var A = [
+      ['crown', 'The Green Coffin', 'Lowest score after hole 8. Wears it home.'],
+      ['mask', 'Best Costume', 'Voted at hole 1. Worth 3 strokes off.'],
+      ['flag', 'Hole in One Hero', 'Most holes finished in a single sip.'],
+      ['blood', 'Spill Thriller', 'Most spill penalties. A true horror show.'],
+      ['ghost', 'The Zombie', 'Last place. Buys the first round at the Good Home.', 'spook'],
+      ['train', 'Mind the Gap', 'Whoever got lost on the CRL. There’s always one.', 'spook']
+    ];
+    $('awardList').innerHTML = A.map(function (a) {
+      return '<div class="award' + (a[3] ? ' ' + a[3] : '') + '">' + icon(a[0]) + '<h3>' + a[1] + '</h3><p>' + a[2] + '</p></div>';
+    }).join('');
+  }
+
+  // ---------- city skyline ----------
+  function renderCity() {
+    var B = [[0,42,62],[38,30,92],[66,36,54],[100,30,112],[128,42,72],[196,34,124],[228,28,84],[254,46,142],[298,30,98],[326,40,64],[364,30,108],[392,44,78],[434,36,52]];
+    var out = '', seed = 7;
+    function rnd() { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; }
+    B.forEach(function (b) {
+      var x = b[0], w = b[1], h = b[2], y = 244 - h;
+      out += '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" fill="var(--ink)"></rect>';
+      for (var wy = y + 8; wy < 236; wy += 10) for (var wx = x + 5; wx < x + w - 6; wx += 8) {
+        if (rnd() < .16) out += '<rect x="' + wx + '" y="' + wy + '" width="3.5" height="5" fill="var(--window)" opacity="' + (0.5 + rnd() * 0.5).toFixed(2) + '"></rect>';
+      }
+    });
+    var g = $('city'); if (g) g.innerHTML = out;
+  }
+
   // ---------- birthday name ----------
   function renderBday() {
     var n = state.bday ? state.bday : 'Dylan';
@@ -890,6 +1049,8 @@ footer { padding-block: 48px 0; color: var(--muted); font-size: .85rem; display:
   renderBday();
   renderStatus();
   renderMap();
+  renderCity();
+  renderAwards();
   renderTimeline();
   renderHoles();
   renderMoney();
