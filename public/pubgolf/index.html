@@ -262,7 +262,7 @@ footer { padding-block: 48px 0; color: var(--muted); font-size: .85rem; display:
   <header class="hero" id="top">
     <p class="eyebrow">Saturday 31 October 2026 · Tee off 2:30pm · Dress code: Halloween</p>
     <h1>Hallow<span>Pub Golf</span></h1>
-    <p class="sub">Eight holes along the brand new City Rail Link, from the Viaduct to the Good Home Mt Eden, timed so we land in each bar during happy hour. A surprise for <strong id="bdayName">the Birthday Legend</strong>, so keep this link out of their sight.</p>
+    <p class="sub">Eight holes along the brand new City Rail Link, from the Viaduct to the Good Home Mt Eden, timed so we land in each bar during happy hour. A surprise for <strong id="bdayName">Dylan</strong>, so keep this link well away from them.</p>
     <div class="facts">
       <span class="chip">8 holes</span>
       <span class="chip">Par <span id="parTotal">23</span></span>
@@ -272,8 +272,8 @@ footer { padding-block: 48px 0; color: var(--muted); font-size: .85rem; display:
     </div>
     <div class="status" id="status" aria-live="polite"></div>
     <div class="bday">
-      <label for="bdayInput">Birthday legend's name</label>
-      <input type="text" id="bdayInput" placeholder="e.g. Sam" maxlength="30">
+      <label for="bdayInput">Birthday legend</label>
+      <input type="text" id="bdayInput" placeholder="Dylan" maxlength="30">
     </div>
   </header>
 
@@ -334,10 +334,10 @@ footer { padding-block: 48px 0; color: var(--muted); font-size: .85rem; display:
           <li><span>Toilet break before hole 4</span><b class="bad">+2</b></li>
           <li><span>Taking off part of your costume</span><b class="bad">+2</b></li>
           <li><span>Phone out at the bar during a hole</span><b class="bad">+1</b></li>
-          <li><span>Saying the birthday legend's real name before hole 2 (surprise!)</span><b class="bad">+1</b></li>
+          <li><span>Spoiling the surprise before 2:30pm</span><b class="bad">+1</b></li>
           <li><span>Skipping a water hazard</span><b class="bad">+2</b></li>
           <li><span>Best costume, voted at hole 1</span><b class="good">−3</b></li>
-          <li><span>The birthday legend, every hole</span><b class="good">−1</b></li>
+          <li><span>Dylan, the birthday legend, every hole</span><b class="good">−1</b></li>
         </ul>
       </div>
       <div class="card">
@@ -425,7 +425,7 @@ footer { padding-block: 48px 0; color: var(--muted); font-size: .85rem; display:
       <div class="card">
         <h3>Keeping it a surprise</h3>
         <ul>
-          <li>Tell the birthday legend to be at the Viaduct at 2:15pm in costume for "a few drinks".</li>
+          <li>Tell Dylan to be at the Viaduct at 2:15pm in costume for "a few drinks".</li>
           <li>Everyone else meets inside Danny Doolans at 2:00pm.</li>
           <li>Hand them the scorecard at 2:30pm. That's the reveal.</li>
           <li>Check the AT journey planner the week before. The CRL is only weeks old and weekend timetables can change.</li>
@@ -601,7 +601,7 @@ footer { padding-block: 48px 0; color: var(--muted); font-size: .85rem; display:
     var now = Date.now();
     var start = at('14:30');
     var el = $('status');
-    var bday = state.bday || 'the Birthday Legend';
+    var bday = state.bday || 'Dylan';
     if (now < start) {
       var s = Math.floor((start - now) / 1000);
       var d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60), sec = s % 60;
@@ -734,7 +734,7 @@ footer { padding-block: 48px 0; color: var(--muted); font-size: .85rem; display:
     el.className = 'tot-card ' + c.k.toLowerCase();
     void el.offsetWidth;
     el.classList.add('flip');
-    var text = c.t.replace(/the birthday legend/gi, state.bday || 'the birthday legend');
+    var text = c.t.replace(/the birthday legend/gi, state.bday || 'Dylan');
     el.innerHTML = '<span class="kind">' + c.k + '</span><p>' + esc(text) + '</p>';
     state.drawn = (state.drawn || 0) + 1;
     $('drawCount').textContent = state.drawn + ' drawn so far';
@@ -878,7 +878,7 @@ footer { padding-block: 48px 0; color: var(--muted); font-size: .85rem; display:
 
   // ---------- birthday name ----------
   function renderBday() {
-    var n = state.bday ? state.bday : 'the Birthday Legend';
+    var n = state.bday ? state.bday : 'Dylan';
     $('bdayName').textContent = n;
     $('bdayInput').value = state.bday || '';
   }
@@ -897,7 +897,7 @@ footer { padding-block: 48px 0; color: var(--muted); font-size: .85rem; display:
   bindCard();
   if (state.drawn) $('drawCount').textContent = state.drawn + ' drawn so far';
   $('drawBtn').addEventListener('click', draw);
-  $('bdayInput').addEventListener('input', function (e) { state.bday = e.target.value.trim(); save(); $('bdayName').textContent = state.bday || 'the Birthday Legend'; renderStatus(); });
+  $('bdayInput').addEventListener('input', function (e) { state.bday = e.target.value.trim(); save(); $('bdayName').textContent = state.bday || 'Dylan'; renderStatus(); });
   setInterval(renderStatus, 1000);
   setInterval(renderHoles, 60000);
 })();
