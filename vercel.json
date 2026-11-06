@@ -73,7 +73,7 @@
       "has": [
         {
           "type": "host",
-          "value": "(?<h>.*azizza.*)"
+          "value": "(?<h>.*aziza.*)"
         }
       ],
       "destination": "/wedding/",
