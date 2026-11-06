@@ -66,5 +66,18 @@
       "source": "/wedding/sign",
       "destination": "/wedding/sign/index.html"
     }
+  ],
+  "redirects": [
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "(?<h>.*azizza.*)"
+        }
+      ],
+      "destination": "/wedding/",
+      "permanent": false
+    }
   ]
 }

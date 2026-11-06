@@ -107,7 +107,7 @@
     });
   }
 
-  function guestUrl(siteUrl) { return (siteUrl || location.origin) + '/wedding/'; }
+  function guestUrl() { return location.origin + '/wedding/'; }
 
   function drawQr(url) {
     $('guest-link').textContent = url;
