@@ -19,7 +19,7 @@ The event portal for our Come Dine With Me series. Five teams of two, and every 
 - **Organiser control room.** Setup wizard, team names and characters (cropped from the poster), invite links and QR codes, dates and hosts, scoring overrides, a scorecard tracker, CSV export, backup and restore.
 - Built for phones first and checked on screens from 320 to 430 pixels wide. It can be added to the home screen, and shows a proper link preview in WhatsApp and iMessage.
 
-## Wedding: Who's Most Likely To (Adil & Azizza)
+## Wedding: The Shoe Game (Adil & Azizza)
 
 A separate mini site for the wedding ice breaker, using the same database.
 
