@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Scan to Ask</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/wedding/wedding.css">
+</head>
+<body style="background:#fff">
+<main class="sign">
+  <header class="crest">
+    <div class="eyebrow">The Wedding of</div>
+    <h1>Adil <span class="amp">&amp;</span> Azizza</h1>
+    <p class="sub">Who's most likely to...?</p>
+    <div class="divider">&#10086;</div>
+  </header>
+  <div class="qr" id="qr"></div>
+  <p class="scan">Scan to send the couple a question</p>
+  <p class="small">The MC will ask, and the bride and groom will point at who it fits best.</p>
+  <p class="small" id="link"></p>
+  <p class="no-print" style="margin-top:28px"><button class="btn" onclick="print()">Print this sign</button></p>
+</main>
+<script src="/vendor/qrcode.js"></script>
+<script>
+  function draw(base) {
+    var url = (base || location.origin) + '/wedding/';
+    document.getElementById('link').textContent = url.replace(/^https?:\/\//, '');
+    var qr = qrcode(0, 'M'); qr.addData(url); qr.make();
+    document.getElementById('qr').innerHTML = qr.createSvgTag({ cellSize: 8, margin: 2, scalable: true });
+  }
+  fetch('/api/wedding').then(function (r) { return r.json(); }).then(function (d) { draw(d.siteUrl); }).catch(function () { draw(''); });
+</script>
+</body>
+</html>

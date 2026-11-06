@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MC Question Board</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#faf6ef">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/wedding/wedding.css">
+</head>
+<body>
+<main class="wrap wide">
+  <header class="crest">
+    <div class="eyebrow">MC Question Board</div>
+    <h1>Adil <span class="amp">&amp;</span> Azizza</h1>
+    <p class="sub">Who's most likely to...?</p>
+  </header>
+
+  <!-- PIN gate -->
+  <section class="card" id="gate" style="max-width:420px;margin:0 auto">
+    <h2>MC sign in</h2>
+    <p class="lead">Enter the MC PIN to see the guests' questions.</p>
+    <form id="pin-form">
+      <div class="field"><input id="pin" type="password" inputmode="numeric" autocomplete="off" placeholder="PIN"></div>
+      <button class="btn block" type="submit">Open the board</button>
+      <p class="error" id="pin-error" role="alert"></p>
+    </form>
+  </section>
+
+  <!-- Board -->
+  <section id="board" hidden>
+    <div class="side">
+      <div>
+        <div class="toolbar">
+          <div class="tabs" role="tablist">
+            <button data-f="todo" class="on">To ask</button>
+            <button data-f="starred">Starred</button>
+            <button data-f="asked">Asked</button>
+            <button data-f="all">All</button>
+          </div>
+          <div class="stats" id="stats"></div>
+        </div>
+        <div class="toolbar">
+          <button class="btn gold" id="present">&#9654; Present questions</button>
+          <div class="tabs">
+            <button data-s="old" class="on">Oldest first</button>
+            <button data-s="new">Newest first</button>
+          </div>
+        </div>
+        <ul class="qlist" id="list"></ul>
+        <p class="error" id="board-error" role="alert"></p>
+      </div>
+
+      <aside class="panel">
+        <h3>Guest QR code</h3>
+        <div class="qr" id="qr"></div>
+        <div class="link" id="guest-link"></div>
+        <div class="row">
+          <button class="btn small ghost" id="copy">Copy link</button>
+          <a class="btn small ghost" href="/wedding/sign/" target="_blank">Print sign</a>
+        </div>
+        <p class="hint" style="justify-content:center;margin-top:14px">New questions show up by themselves.</p>
+        <button class="btn small ghost" id="signout" style="margin-top:6px">Sign out</button>
+      </aside>
+    </div>
+  </section>
+</main>
+
+<!-- Presenter -->
+<div class="stage" id="stage" hidden>
+  <div class="count" id="stage-count"></div>
+  <button class="btn small ghost close" id="stage-close">Close</button>
+  <div class="eyebrow">On the count of three, point!</div>
+  <div class="pre">Who's most likely to...</div>
+  <div class="big" id="stage-text"></div>
+  <div class="by" id="stage-by"></div>
+  <div class="controls">
+    <button class="btn ghost" id="stage-prev">&larr; Back</button>
+    <button class="btn ghost" id="stage-skip">Skip</button>
+    <button class="btn gold" id="stage-next">Asked, next &rarr;</button>
+  </div>
+</div>
+
+<script src="/vendor/qrcode.js"></script>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var pin = '';
+  try { pin = sessionStorage.getItem('wedding-mc-pin') || localStorage.getItem('wedding-mc-pin') || ''; } catch (e) {}
+  var questions = [];
+  var filter = 'todo', sort = 'old';
+  var timer = null;
+
+  function api(method, url, body) {
+    return fetch(url, {
+      method: method,
+      headers: { 'content-type': 'application/json', 'x-mc-pin': pin },
+      body: body ? JSON.stringify(body) : undefined
+    }).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (d) {
+        if (!r.ok) { var e = new Error(d.message || 'Something went wrong.'); e.status = r.status; throw e; }
+        return d;
+      });
+    });
+  }
+
+  function guestUrl(siteUrl) { return (siteUrl || location.origin) + '/wedding/'; }
+
+  function drawQr(url) {
+    $('guest-link').textContent = url;
+    if (!window.qrcode) return;
+    var qr = window.qrcode(0, 'M'); qr.addData(url); qr.make();
+    $('qr').innerHTML = qr.createSvgTag({ cellSize: 6, margin: 2, scalable: true });
+  }
+
+  function load(first) {
+    return api('GET', '/api/wedding?list=1').then(function (d) {
+      questions = d.questions || [];
+      if (first) drawQr(guestUrl(d.siteUrl));
+      $('board-error').textContent = '';
+      render();
+    }).catch(function (e) {
+      if (e.status === 401) { signOut(); $('pin-error').textContent = e.message; return; }
+      $('board-error').textContent = e.message === 'Failed to fetch' ? 'Lost connection. Retrying...' : e.message;
+    });
+  }
+
+  function visible() {
+    var list = questions.filter(function (q) {
+      if (filter === 'todo') return !q.asked;
+      if (filter === 'asked') return q.asked;
+      if (filter === 'starred') return q.starred;
+      return true;
+    });
+    list.sort(function (a, b) {
+      if (filter === 'todo' && a.starred !== b.starred) return a.starred ? -1 : 1;
+      return sort === 'old' ? a.at - b.at : b.at - a.at;
+    });
+    return list;
+  }
+
+  function timeAgo(t) {
+    var m = Math.round((Date.now() - t) / 60000);
+    if (m < 1) return 'just now';
+    if (m < 60) return m + ' min ago';
+    return new Date(t).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+  }
+
+  function el(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  }
+
+  function render() {
+    var asked = questions.filter(function (q) { return q.asked; }).length;
+    $('stats').innerHTML = '';
+    $('stats').append('Total ', el('b', '', String(questions.length)), ' · To ask ', el('b', '', String(questions.length - asked)));
+    var list = $('list');
+    list.innerHTML = '';
+    var items = visible();
+    if (!items.length) {
+      var msg = questions.length ? 'Nothing here.' : 'No questions yet. Share the QR code with the guests!';
+      if (filter === 'todo' && questions.length) msg = 'Every question has been asked!';
+      list.appendChild(el('li', 'empty', msg));
+      return;
+    }
+    items.forEach(function (q) {
+      var li = el('li', 'q' + (q.asked ? ' asked' : '') + (q.starred ? ' starred' : ''));
+      var t = el('div', 'text');
+      t.append(el('span', 'pre', "Who's most likely to "), document.createTextNode(q.text));
+      li.appendChild(t);
+      li.appendChild(el('div', 'meta', (q.name ? 'From ' + q.name + ' · ' : '') + timeAgo(q.at)));
+      var a = el('div', 'actions');
+      var star = el('button', 'icon-btn' + (q.starred ? ' on' : ''), q.starred ? '★ Starred' : '☆ Star');
+      star.onclick = function () { update(q, { starred: !q.starred }); };
+      var done = el('button', 'icon-btn' + (q.asked ? ' on' : ''), q.asked ? '✓ Asked' : 'Mark asked');
+      done.onclick = function () { update(q, { asked: !q.asked }); };
+      var del = el('button', 'icon-btn danger', 'Delete');
+      del.onclick = function () {
+        if (!confirm('Delete this question?')) return;
+        questions = questions.filter(function (x) { return x.id !== q.id; }); render();
+        api('DELETE', '/api/wedding?id=' + encodeURIComponent(q.id)).catch(function (e) { $('board-error').textContent = e.message; load(); });
+      };
+      a.append(star, done, del);
+      li.appendChild(a);
+      list.appendChild(li);
+    });
+  }
+
+  function update(q, patch) {
+    Object.assign(q, patch); render(); if (!$('stage').hidden) showStage();
+    return api('PUT', '/api/wedding', Object.assign({ id: q.id }, patch)).catch(function (e) { $('board-error').textContent = e.message; load(); });
+  }
+
+  /* ---------- Presenter ---------- */
+  var deck = [], pos = 0;
+  function openStage() {
+    deck = questions.filter(function (q) { return !q.asked; }).sort(function (a, b) {
+      if (a.starred !== b.starred) return a.starred ? -1 : 1;
+      return a.at - b.at;
+    });
+    pos = 0; $('stage').hidden = false; showStage();
+  }
+  function showStage() {
+    var q = deck[pos];
+    if (!q) {
+      $('stage-text').textContent = deck.length ? 'That was the last one!' : 'No questions waiting.';
+      $('stage-by').textContent = ''; $('stage-count').textContent = '';
+      $('stage-next').hidden = true; $('stage-skip').hidden = true;
+      return;
+    }
+    $('stage-next').hidden = false; $('stage-skip').hidden = false;
+    $('stage-text').textContent = q.text;
+    $('stage-by').textContent = q.name ? 'Asked by ' + q.name : '';
+    $('stage-count').textContent = (pos + 1) + ' of ' + deck.length;
+  }
+  $('present').onclick = openStage;
+  $('stage-close').onclick = function () { $('stage').hidden = true; };
+  $('stage-next').onclick = function () { var q = deck[pos]; if (q && !q.asked) { Object.assign(q, { asked: true }); api('PUT', '/api/wedding', { id: q.id, asked: true }).catch(function () {}); render(); } pos++; showStage(); };
+  $('stage-skip').onclick = function () { pos++; showStage(); };
+  $('stage-prev').onclick = function () { if (pos > 0) pos--; showStage(); };
+  document.addEventListener('keydown', function (e) {
+    if ($('stage').hidden) return;
+    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); $('stage-next').hidden ? null : $('stage-next').click(); }
+    if (e.key === 'ArrowLeft') $('stage-prev').click();
+    if (e.key === 'Escape') $('stage-close').click();
+  });
+
+  /* ---------- Tabs ---------- */
+  document.querySelectorAll('[data-f]').forEach(function (b) {
+    b.onclick = function () { filter = b.dataset.f; document.querySelectorAll('[data-f]').forEach(function (x) { x.classList.toggle('on', x === b); }); render(); };
+  });
+  document.querySelectorAll('[data-s]').forEach(function (b) {
+    b.onclick = function () { sort = b.dataset.s; document.querySelectorAll('[data-s]').forEach(function (x) { x.classList.toggle('on', x === b); }); render(); };
+  });
+
+  $('copy').onclick = function () {
+    var url = $('guest-link').textContent;
+    (navigator.clipboard ? navigator.clipboard.writeText(url) : Promise.reject()).then(function () {
+      $('copy').textContent = 'Copied!'; setTimeout(function () { $('copy').textContent = 'Copy link'; }, 1500);
+    }).catch(function () { prompt('Copy this link:', url); });
+  };
+
+  /* ---------- Sign in ---------- */
+  function signIn() {
+    $('gate').hidden = true; $('board').hidden = false;
+    load(true);
+    clearInterval(timer);
+    timer = setInterval(function () { if (!document.hidden) load(); }, 5000);
+  }
+  function signOut() {
+    clearInterval(timer); pin = '';
+    try { sessionStorage.removeItem('wedding-mc-pin'); localStorage.removeItem('wedding-mc-pin'); } catch (e) {}
+    $('board').hidden = true; $('gate').hidden = false;
+  }
+  $('signout').onclick = signOut;
+  $('pin-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    pin = $('pin').value.trim();
+    $('pin-error').textContent = '';
+    api('GET', '/api/wedding?list=1').then(function () {
+      try { localStorage.setItem('wedding-mc-pin', pin); } catch (e2) {}
+      signIn();
+    }).catch(function (e3) { $('pin-error').textContent = e3.message; });
+  });
+  if (pin) signIn();
+})();
+</script>
+</body>
+</html>
