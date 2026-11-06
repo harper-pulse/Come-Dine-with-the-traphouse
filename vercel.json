@@ -52,5 +52,19 @@
         }
       ]
     }
+  ],
+  "rewrites": [
+    {
+      "source": "/wedding",
+      "destination": "/wedding/index.html"
+    },
+    {
+      "source": "/wedding/mc",
+      "destination": "/wedding/mc/index.html"
+    },
+    {
+      "source": "/wedding/sign",
+      "destination": "/wedding/sign/index.html"
+    }
   ]
 }

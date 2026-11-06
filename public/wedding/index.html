@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Adil &amp; Azizza: Who's Most Likely To</title>
+<meta name="description" content="Send in a question for the bride and groom. Who's most likely to...?">
+<meta name="theme-color" content="#faf6ef">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/wedding/wedding.css">
+</head>
+<body>
+<main class="wrap">
+  <header class="crest">
+    <div class="eyebrow">The Wedding of</div>
+    <h1>Adil <span class="amp">&amp;</span> Azizza</h1>
+    <p class="sub">Who's most likely to...?</p>
+    <div class="divider">&#10086;</div>
+  </header>
+
+  <section class="card" id="form-card">
+    <h2>Ask the couple</h2>
+    <p class="lead">Send in a question. The MC will read it out and Adil and Azizza will point at whoever it fits best.</p>
+    <form id="form" novalidate>
+      <div class="field">
+        <p class="prefix">Who's most likely to...</p>
+        <textarea id="text" aria-label="Your question" maxlength="200" placeholder="...forget where they parked the car" required></textarea>
+        <div class="hint"><span>Keep it fun and family friendly</span><span id="count">0/200</span></div>
+      </div>
+      <div class="field">
+        <label for="name">Your name <span style="font-weight:400;color:var(--muted)">(optional)</span></label>
+        <input id="name" type="text" maxlength="60" autocomplete="given-name" placeholder="So the MC can give you credit">
+      </div>
+      <button class="btn block" type="submit" id="send">Send my question</button>
+      <p class="error" id="error" role="alert"></p>
+    </form>
+
+    <div class="ideas">
+      <div class="label">Need an idea? Tap one</div>
+      <div class="chips" id="chips"></div>
+    </div>
+  </section>
+
+  <section class="card thanks" id="thanks" hidden>
+    <div class="ring">&#9901;</div>
+    <h2>Thank you!</h2>
+    <p class="lead" id="thanks-text">Your question is in. Listen out for it later.</p>
+    <button class="btn" id="again" type="button">Send another</button>
+  </section>
+
+  <p class="how"><strong>How it works:</strong> the MC asks, and on the count of three the bride and groom both point at who they think it is.</p>
+  <footer>With love, on their wedding day</footer>
+</main>
+
+<script>
+(function () {
+  var ideas = [
+    'wake up late', 'cry at a movie', 'get lost on the way somewhere', 'spend too much shopping',
+    'fall asleep first', 'burn dinner', 'say sorry first', 'eat the last slice',
+    'hog the blanket', 'forget an anniversary', 'take the longest to get ready', 'win an argument'
+  ];
+  var $ = function (id) { return document.getElementById(id); };
+  var text = $('text'), name = $('name'), form = $('form'), send = $('send'), err = $('error');
+
+  try { name.value = localStorage.getItem('wedding-name') || ''; } catch (e) {}
+
+  var chips = $('chips');
+  ideas.sort(function () { return Math.random() - 0.5; }).slice(0, 6).forEach(function (idea) {
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'chip'; b.textContent = '...' + idea;
+    b.onclick = function () { text.value = idea; update(); text.focus(); };
+    chips.appendChild(b);
+  });
+
+  function update() { $('count').textContent = text.value.length + '/200'; }
+  text.addEventListener('input', update);
+
+  // Strip a leading "who's most likely to" if people type it themselves.
+  function clean(v) {
+    return v.trim().replace(/^\.+\s*/, '').replace(/^(who('|’)?s|who is)\s+(the\s+)?(most\s+)?likely\s+to\s*/i, '').replace(/^\.+\s*/, '');
+  }
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    err.textContent = '';
+    var q = clean(text.value);
+    if (q.length < 3) { err.textContent = 'Write a question first.'; text.focus(); return; }
+    send.disabled = true; send.textContent = 'Sending...';
+    try { localStorage.setItem('wedding-name', name.value.trim()); } catch (e2) {}
+    fetch('/api/wedding', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ text: q, name: name.value.trim() })
+    }).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (d) {
+        if (!r.ok) throw new Error(d.message || 'Could not send that. Try again.');
+      });
+    }).then(function () {
+      text.value = ''; update();
+      $('form-card').hidden = true; $('thanks').hidden = false;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }).catch(function (e3) {
+      err.textContent = e3.message === 'Failed to fetch' ? 'No connection. Check your signal and try again.' : e3.message;
+    }).then(function () {
+      send.disabled = false; send.textContent = 'Send my question';
+    });
+  });
+
+  $('again').onclick = function () {
+    $('thanks').hidden = true; $('form-card').hidden = false; text.focus();
+  };
+})();
+</script>
+</body>
+</html>
