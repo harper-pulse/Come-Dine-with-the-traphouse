@@ -1,4 +1,4 @@
-// Wedding "Who's most likely to" questions for Adil & Azizza.
+// Wedding "Who's most likely to" questions for Adil & Aziza.
 //
 //   GET    /api/wedding            -> { siteUrl } (public, for the QR code)
 //   POST   /api/wedding            -> guest submits { text, name }

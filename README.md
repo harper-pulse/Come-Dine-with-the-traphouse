@@ -19,14 +19,14 @@ The event portal for our Come Dine With Me series. Five teams of two, and every 
 - **Organiser control room.** Setup wizard, team names and characters (cropped from the poster), invite links and QR codes, dates and hosts, scoring overrides, a scorecard tracker, CSV export, backup and restore.
 - Built for phones first and checked on screens from 320 to 430 pixels wide. It can be added to the home screen, and shows a proper link preview in WhatsApp and iMessage.
 
-## Wedding: The Shoe Game (Adil & Azizza)
+## Wedding: The Shoe Game (Adil & Aziza)
 
 A separate mini site for the wedding ice breaker, using the same database.
 
 - **Guests:** `/wedding` . Scan the QR code, type a "Who's most likely to..." question, send. Name is optional.
 - **MC:** `/wedding/mc` . Enter the MC PIN (default `2026`, or set `WEDDING_MC_PIN` in Vercel and redeploy). New questions appear every few seconds. Star the good ones, mark them asked, delete anything dodgy. **Present questions** shows one question at a time in big text, starred ones first.
 - **Table sign:** `/wedding/sign` . A printable QR code sign for the tables.
-- **Its own address.** In Vercel, **Settings > Domains**, add a free address with "azizza" in it (like `adil-and-azizza.vercel.app`). Opening that address goes straight to the question page, and the QR codes on the sign and MC page use whichever address you opened them on.
+- **Its own address.** In Vercel, **Settings > Domains**, add a free address with "aziza" in it (like `adil-and-aziza.vercel.app`). Opening that address goes straight to the question page, and the QR codes on the sign and MC page use whichever address you opened them on.
 
 ## Getting it live on Vercel
 
