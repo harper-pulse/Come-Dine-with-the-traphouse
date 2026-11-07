@@ -93,6 +93,8 @@
   var questions = [];
   var filter = 'todo', sort = 'old';
   var timer = null;
+  var QUEUE = 'https://ntfy.sh/adil-aziza-shoe-game-q7m3x9k2p4';
+  var MC_PIN = '2026';
 
   function api(method, url, body) {
     return fetch(url, {
@@ -116,16 +118,56 @@
     $('qr').innerHTML = qr.createSvgTag({ cellSize: 6, margin: 2, scalable: true });
   }
 
-  function load(first) {
-    return api('GET', '/api/wedding?list=1').then(function (d) {
-      questions = d.questions || [];
-      if (first) drawQr(guestUrl(d.siteUrl));
+  function relayLoad() {
+    return fetch(QUEUE + '/json?poll=1&since=all', { cache: 'no-store' }).then(function (r) {
+      if (!r.ok) throw new Error('relay ' + r.status);
+      return r.text();
+    }).then(function (txt) {
+      var byId = {}, order = [];
+      txt.split('\n').forEach(function (line) {
+        if (!line.trim()) return;
+        var ev; try { ev = JSON.parse(line); } catch (e) { return; }
+        if (ev.event !== 'message' || !ev.message) return;
+        var m; try { m = JSON.parse(ev.message); } catch (e) { return; }
+        if (!m || !m.id) return;
+        if (m.t === 'q' && !byId[m.id]) {
+          byId[m.id] = { id: String(m.id), text: String(m.text || ''), name: String(m.name || ''), at: Number(m.at) || ev.time * 1000, asked: false, starred: false, src: 'relay' };
+          order.push(m.id);
+        } else if (m.t === 'f' && byId[m.id]) {
+          byId[m.id].asked = !!m.asked; byId[m.id].starred = !!m.starred;
+        } else if (m.t === 'd' && byId[m.id]) {
+          byId[m.id].deleted = true;
+        }
+      });
+      return order.map(function (id) { return byId[id]; }).filter(function (q) { return !q.deleted; });
+    });
+  }
+
+  function relaySend(obj) {
+    return fetch(QUEUE, { method: 'POST', body: JSON.stringify(obj) }).then(function (r) { if (!r.ok) throw new Error('Could not save that change.'); });
+  }
+
+  var firstDone = false;
+  function load() {
+    if (!firstDone) { firstDone = true; drawQr(guestUrl()); }
+    var a = relayLoad().then(function (l) { return { ok: true, list: l }; }, function (e) { return { ok: false, e: e }; });
+    var b = api('GET', '/api/wedding?list=1').then(function (d) { return { ok: true, list: d.questions || [] }; }, function (e) { return { ok: false, e: e }; });
+    return Promise.all([a, b]).then(function (res) {
+      if (!res[0].ok && !res[1].ok) {
+        $('board-error').textContent = 'Lost connection. Retrying...';
+        return;
+      }
+      var seen = {}, merged = [];
+      res.forEach(function (r) { if (r.ok) r.list.forEach(function (q) { if (!seen[q.id]) { seen[q.id] = 1; merged.push(q); } }); });
+      questions = merged;
       $('board-error').textContent = '';
       render();
-    }).catch(function (e) {
-      if (e.status === 401) { signOut(); $('pin-error').textContent = e.message; return; }
-      $('board-error').textContent = e.message === 'Failed to fetch' ? 'Lost connection. Retrying...' : e.message;
     });
+  }
+
+  function save(q, patch) {
+    if (q.src === 'relay') return relaySend({ t: 'f', id: q.id, asked: !!q.asked, starred: !!q.starred });
+    return api('PUT', '/api/wedding', Object.assign({ id: q.id }, patch));
   }
 
   function visible() {
@@ -184,7 +226,7 @@
       del.onclick = function () {
         if (!confirm('Delete this question?')) return;
         questions = questions.filter(function (x) { return x.id !== q.id; }); render();
-        api('DELETE', '/api/wedding?id=' + encodeURIComponent(q.id)).catch(function (e) { $('board-error').textContent = e.message; load(); });
+        (q.src === 'relay' ? relaySend({ t: 'd', id: q.id }) : api('DELETE', '/api/wedding?id=' + encodeURIComponent(q.id))).catch(function (e) { $('board-error').textContent = e.message; load(); });
       };
       a.append(star, done, del);
       li.appendChild(a);
@@ -194,7 +236,7 @@
 
   function update(q, patch) {
     Object.assign(q, patch); render(); if (!$('stage').hidden) showStage();
-    return api('PUT', '/api/wedding', Object.assign({ id: q.id }, patch)).catch(function (e) { $('board-error').textContent = e.message; load(); });
+    return save(q, patch).catch(function (e) { $('board-error').textContent = e.message; load(); });
   }
 
   /* ---------- Presenter ---------- */
@@ -221,7 +263,7 @@
   }
   $('present').onclick = openStage;
   $('stage-close').onclick = function () { $('stage').hidden = true; };
-  $('stage-next').onclick = function () { var q = deck[pos]; if (q && !q.asked) { Object.assign(q, { asked: true }); api('PUT', '/api/wedding', { id: q.id, asked: true }).catch(function () {}); render(); } pos++; showStage(); };
+  $('stage-next').onclick = function () { var q = deck[pos]; if (q && !q.asked) { Object.assign(q, { asked: true }); save(q, { asked: true }).catch(function () {}); render(); } pos++; showStage(); };
   $('stage-skip').onclick = function () { pos++; showStage(); };
   $('stage-prev').onclick = function () { if (pos > 0) pos--; showStage(); };
   document.addEventListener('keydown', function (e) {
@@ -249,7 +291,7 @@
   /* ---------- Sign in ---------- */
   function signIn() {
     $('gate').hidden = true; $('board').hidden = false;
-    load(true);
+    load();
     clearInterval(timer);
     timer = setInterval(function () { if (!document.hidden) load(); }, 5000);
   }
@@ -263,12 +305,11 @@
     e.preventDefault();
     pin = $('pin').value.trim();
     $('pin-error').textContent = '';
-    api('GET', '/api/wedding?list=1').then(function () {
-      try { localStorage.setItem('wedding-mc-pin', pin); } catch (e2) {}
-      signIn();
-    }).catch(function (e3) { $('pin-error').textContent = e3.message; });
+    if (pin !== MC_PIN) { $('pin-error').textContent = 'That PIN is not right.'; return; }
+    try { localStorage.setItem('wedding-mc-pin', pin); } catch (e2) {}
+    signIn();
   });
-  if (pin) signIn();
+  if (pin === MC_PIN) signIn();
 })();
 </script>
 </body>
