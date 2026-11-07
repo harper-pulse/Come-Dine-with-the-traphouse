@@ -9,13 +9,12 @@
 // The MC PIN is the WEDDING_MC_PIN environment variable, or 2026 if unset.
 // It is sent in the x-mc-pin header.
 import crypto from 'node:crypto';
-import { handle, json, readJson, HttpError, clientIp, queryParams, str } from '../lib/http.js';
+import { handle, json, readJson, HttpError, queryParams, str } from '../lib/http.js';
 import { pipeline, storageKind, hashToObject, parseJson, PREFIX } from '../lib/store.js';
 import { publicSiteUrl } from '../lib/site.js';
 
 const KEY = `${PREFIX}wedding:questions`;
 const MC_PIN = String(process.env.WEDDING_MC_PIN || '2026');
-const MAX_PER_HOUR = 30;
 
 function needStorage() {
   if (storageKind() === 'none') {
@@ -60,12 +59,6 @@ export const POST = handle(async (request) => {
   const name = str(body.name, 60).replace(/\s+/g, ' ');
   if (text.length < 3) throw new HttpError(400, 'too_short', 'Write a question first.');
   if (!/[?.!]$/.test(text)) text += '?';
-
-  const rateKey = `${PREFIX}wedding:rate:${clientIp(request)}`;
-  const [count] = await pipeline([['INCR', rateKey], ['EXPIRE', rateKey, 3600]]);
-  if (Number(count) > MAX_PER_HOUR) {
-    throw new HttpError(429, 'slow_down', 'That is a lot of questions! Give the MC a chance to catch up.');
-  }
 
   const item = { id: crypto.randomBytes(6).toString('hex'), text, name, at: Date.now(), asked: false, starred: false };
   await pipeline([['HSET', KEY, item.id, JSON.stringify(item)]]);
