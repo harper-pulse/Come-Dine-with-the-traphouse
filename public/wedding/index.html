@@ -61,6 +61,7 @@
     'fall asleep first', 'burn dinner', 'say sorry first', 'eat the last slice',
     'hog the blanket', 'forget an anniversary', 'take the longest to get ready', 'win an argument'
   ];
+  var QUEUE = 'https://ntfy.sh/adil-aziza-shoe-game-q7m3x9k2p4';
   var $ = function (id) { return document.getElementById(id); };
   var text = $('text'), name = $('name'), form = $('form'), send = $('send'), err = $('error');
 
@@ -89,13 +90,22 @@
     if (q.length < 3) { err.textContent = 'Write a question first.'; text.focus(); return; }
     send.disabled = true; send.textContent = 'Sending...';
     try { localStorage.setItem('wedding-name', name.value.trim()); } catch (e2) {}
-    fetch('/api/wedding', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ text: q, name: name.value.trim() })
-    }).then(function (r) {
-      return r.json().catch(function () { return {}; }).then(function (d) {
-        if (!r.ok) throw new Error(d.message || 'Could not send that. Try again.');
+    var nm = name.value.trim();
+    var qq = /[?.!]$/.test(q) ? q : q + '?';
+    var item = { t: 'q', id: Math.random().toString(16).slice(2, 14), text: qq.slice(0, 200), name: nm.slice(0, 60), at: Date.now() };
+    // Main route: a free message relay, so it works even if the site's database is down.
+    fetch(QUEUE, { method: 'POST', body: JSON.stringify(item) }).then(function (r) {
+      if (!r.ok) throw new Error('relay ' + r.status);
+    }).catch(function () {
+      // Backup route: the site's own database.
+      return fetch('/api/wedding', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ text: q, name: nm })
+      }).then(function (r) {
+        return r.json().catch(function () { return {}; }).then(function (d) {
+          if (!r.ok) throw new Error('Could not send that. Try again in a moment.');
+        });
       });
     }).then(function () {
       text.value = ''; update();
