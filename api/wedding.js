@@ -18,7 +18,12 @@ import { publicSiteUrl } from '../lib/site.js';
 
 const KEY = `${PREFIX}wedding:questions`;
 const MC_PIN = String(process.env.WEDDING_MC_PIN || '2026');
-const HAS_BLOB = !!process.env.BLOB_READ_WRITE_TOKEN;
+// The Blob key is normally BLOB_READ_WRITE_TOKEN, but Vercel can save it under
+// a custom prefix, so also look for any variable holding a Blob key.
+const BLOB_TOKEN = process.env.BLOB_READ_WRITE_TOKEN
+  || Object.values(process.env).find((v) => typeof v === 'string' && v.startsWith('vercel_blob_rw_'))
+  || '';
+const HAS_BLOB = !!BLOB_TOKEN;
 const BLOB_ROOT = 'wedding-shoe-game/';
 
 function handle(fn) {
@@ -52,7 +57,7 @@ const unb64 = (s) => Buffer.from(s, 'base64url').toString('utf8');
 
 async function blobPut(pathname) {
   const { put } = await import('@vercel/blob');
-  const opts = { addRandomSuffix: false, allowOverwrite: true, contentType: 'text/plain' };
+  const opts = { addRandomSuffix: false, allowOverwrite: true, contentType: 'text/plain', token: BLOB_TOKEN };
   try {
     await put(pathname, '1', { ...opts, access: 'public' });
   } catch {
@@ -65,7 +70,7 @@ async function blobListAll() {
   const out = [];
   let cursor;
   do {
-    const page = await list({ prefix: BLOB_ROOT, cursor, limit: 1000 });
+    const page = await list({ prefix: BLOB_ROOT, cursor, limit: 1000, token: BLOB_TOKEN });
     out.push(...page.blobs);
     cursor = page.hasMore ? page.cursor : undefined;
   } while (cursor);
@@ -167,6 +172,7 @@ export const POST = handle(async (request) => {
       errors.push(`database: ${err.message}`);
     }
   }
+  if (!HAS_BLOB) errors.push('no backup storage connected');
   if (HAS_BLOB) {
     try {
       await blobSave(item);
